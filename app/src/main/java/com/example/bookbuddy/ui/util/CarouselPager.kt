@@ -148,10 +148,8 @@ fun CarouselCard(
                     .aspectRatio(2 / 3f)
                     .clip(MaterialTheme.shapes.large)
                     .graphicsLayer {
-                        // get a scale value between 1 and 1.75f, 1.75 will be when its resting,
-                        // 1f is the smallest it'll be when not the focused page
+
                         val scale = lerp(1f, 1.75f, pageOffset)
-                        // apply the scale equally to both X and Y, to not distort the image
                         scaleX *= scale
                         scaleY *= scale
                     },

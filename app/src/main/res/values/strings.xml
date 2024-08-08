@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Book Buddy</string>
+    <string name="close">Close</string>
+    <string name="cover_image">Cover Image</string>
+    <string name="authors">Authors</string>
+    <string name="categories">Categories</string>
+    <string name="synopsis">Synopsis</string>
+    <string name="not_available">lorem </string>
+    <string name="read_more">Read More</string>
+    <string name="english">English</string>
+    <string name="next">Next</string>
+    <string name="prev">Prev</string>
+    <string name="up_button">Scroll to top</string>
+    <string name="expand">Click to expand</string>
+    <string name="back_button">Back Button</string>
+</resources>

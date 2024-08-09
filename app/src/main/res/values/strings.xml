@@ -13,4 +13,8 @@
     <string name="up_button">Scroll to top</string>
     <string name="expand">Click to expand</string>
     <string name="back_button">Back Button</string>
+    <string name="network_Error">Network connection error. Try again later</string>
+    <string name="error">Error</string>
+    <string name="search_here">Search here...</string>
+    <string name="click_to_search">Click to search</string>
 </resources>

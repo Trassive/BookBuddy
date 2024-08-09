@@ -127,7 +127,7 @@ fun CustomBottomSheet(sheetState: SheetState = rememberModalBottomSheetState(ski
                     .padding(dimensionResource(id = R.dimen.large_padding))
             ) {
                 Image(
-                    imageVector = Icons.Default.Close,
+                    painter = painterResource(id = R.drawable.round_close_24),
                     contentDescription = stringResource(R.string.close),
                 )
             }
@@ -138,7 +138,7 @@ fun CustomBottomSheet(sheetState: SheetState = rememberModalBottomSheetState(ski
                 diskCachePolicy = CachePolicy.ENABLED,
                 modifier = Modifier
                     .offset(
-                        y = maxHeight * 0.3f - coverHeight * 0.4f -60.dp,
+                        y = maxHeight * 0.3f - coverHeight * 0.4f - 60.dp,
                         x = maxWidth / 2 - coverWidth / 2
                     )
                     .clip(MaterialTheme.shapes.large)

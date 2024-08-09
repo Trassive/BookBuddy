@@ -67,6 +67,32 @@ class HomeScreenViewModel(private val homeFeedRepository: HomeFeedRepository): V
             }
         }
     }
+    fun isPagingAvailable(page: Page) = if(page == Page.PREVIOUS) !previous.isNullOrEmpty() else !next.isNullOrEmpty()
+    fun getAnotherPage(page: Page){
+
+        viewModelScope.launch{
+            _UiState.update {
+                try {
+                    val books = (if (page == Page.PREVIOUS) previous else next)!!.let { it ->
+                        homeFeedRepository.updateBooks(it)
+                    }
+                    previous = books.previous
+                    next = books.next
+                    HomeUiState.HomeView(
+                        carauselBooks = books.books.subList(0,min(5,books.books.size)),
+                        bookList =books.books.drop(min(5,books.books.size))
+                    )
+                } catch (e: Exception) {
+                    if (e is IOException) {
+                        HomeUiState.Error(listOf(R.string.network_Error))
+                    } else {
+                        HomeUiState.Error(listOf(R.string.error))
+                    }
+                }
+            }
+        }
+    }
+
     fun onSearchClick(){
         val query = (_UiState.value as? HomeUiState.SearchView)!!.searchText
         if(query.isNotEmpty()){
@@ -124,4 +150,8 @@ sealed interface HomeUiState{
         val bookList: List<Book> = listOf(),
     ): HomeUiState
     data class Error(val error: List<Int>): HomeUiState
+}
+enum class Page{
+    NEXT,
+    PREVIOUS
 }

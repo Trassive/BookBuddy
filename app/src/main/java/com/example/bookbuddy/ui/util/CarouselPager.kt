@@ -127,8 +127,7 @@ fun CarouselCard(
     val pageOffset = pagerState.calculateCurrentOffsetForPage(page).absoluteValue
     ElevatedCard(
         modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
+            .fillMaxWidth(),
         elevation = CardDefaults.elevatedCardElevation(
             defaultElevation = 4.dp
         ),

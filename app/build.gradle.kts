@@ -82,6 +82,8 @@ dependencies {
     implementation( libs.readium.navigator)
     //Coil
     implementation(libs.coil.compose)
+    //lottie-compose
+    implementation( libs.lottie.compose)
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

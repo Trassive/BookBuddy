@@ -1,34 +1,52 @@
 package com.example.bookbuddy.ui
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
-import androidx.fragment.compose.AndroidFragment
-import androidx.fragment.compose.FragmentState
-import org.readium.r2.navigator.epub.EpubDefaults
-import org.readium.r2.navigator.epub.EpubNavigatorFactory
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.bookbuddy.R
+import com.example.bookbuddy.ui.util.CoilImage
+import com.example.bookbuddy.ui.util.LottieAnimationComposable
+import com.example.bookbuddy.ui.util.parallaxLayoutModifier
 
 @Composable
-fun LibraryFragmentWrapper(
-    fragmentFactory: FragmentFactory,
-    createFragment: () -> Fragment,
-    publication: Publication,
-    initialLocator: Locator?,
-    fragmentState: FragmentState
-) {
-    val navigatorFactory = EpubNavigatorFactory(
-        publication = publication,
-        configuration = EpubNavigatorFactory.Configuration(
-            defaults = EpubDefaults(
-                pageMargins = 1.4
-            )
-        )
-    )
-
+fun DetailScreen(detailScreenViewModel: DetailScreenViewModel){
+    val detailScreenState by detailScreenViewModel.uiState.collectAsStateWithLifecycle()
+    val scrollState = rememberScrollState()
+    when(val state = detailScreenState){
+        is DetailScreenState.Loading -> {
+            LottieAnimationComposable(R.raw.empty,modifier = Modifier.fillMaxSize())
+        }
+        is DetailScreenState.Error ->{
+            LottieAnimationComposable(R.raw.empty,modifier = Modifier.fillMaxSize())
+        }
+        is DetailScreenState.DetailView ->{
+            DetailView(state)
+        }
+    }
 }
 
-// Usage
+@Composable
+fun DetailView(detailViewState: DetailScreenState.DetailView) {
+    val scrollState = rememberScrollState()
+    Column(){
+        Box(
+            Modifier.weight(6f)
+                .fillMaxWidth()
+        ){
+            CoilImage(
+                id = detailViewState.book.id,
+                imageUrl = detailViewState.book.downloadLink,
+//                diskCachePolicy = ,
+                modifier = Modifier
+                    .parallaxLayoutModifier(scrollState,2)
+            )
+        }
+    }
+}
+

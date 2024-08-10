@@ -60,6 +60,7 @@ import com.example.bookbuddy.ui.util.BookList
 import com.example.bookbuddy.ui.util.CarouselPager
 import com.example.bookbuddy.ui.util.CustomSearchBar
 import com.example.bookbuddy.ui.util.HomeScreenTopBar
+import com.example.bookbuddy.ui.util.LottieAnimationComposable
 import com.example.compose.BookBuddyTheme
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -123,21 +124,7 @@ fun HomeScreen(viewModel: HomeScreenViewModel){
 
 
 
-@Composable
-fun LottieAnimationComposable(@RawRes id: Int, modifier: Modifier) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(id))
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever
-    )
-    Surface(modifier.fillMaxSize()){
-        LottieAnimation(
-            composition = composition,
-            progress = { progress },
-            alignment = Alignment.Center,
-        )
-    }
-}
+
 @Composable
 fun HomeViewContent(homeUiState: HomeUiState.HomeView, modifier: Modifier = Modifier) {
     val scrollState = rememberScrollState()

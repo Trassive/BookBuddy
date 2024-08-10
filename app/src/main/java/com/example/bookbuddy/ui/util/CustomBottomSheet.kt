@@ -266,6 +266,7 @@ fun BottomSheetPreview(){
             cover = "",
             isDownloaded = false,
             downloadLink = "",
+                isSaved = false,
             description ="In general: Density is essentially a measurement of how tightly matter is packed together."+
 "            Same here, density means how many no. of pixels are present in a particular area on your screen."+
 "                The more the no. of pixels present in an area more will be the density and screen quality."+

@@ -11,11 +11,17 @@ class BooksLocalRepository(private val booksLocalDataSource: BooksLocalDataSourc
     suspend fun updateProgress(locator: SavedLocator){
         booksLocalDataSource.saveProgress(locator)
     }
+    suspend fun getBook(id: Int): Flow<SavedBook?> {
+        return booksLocalDataSource.getBook(id)
+    }
     suspend fun getSavedBook(isDownloaded: Boolean): Flow<List<SavedBook>> {
        return  booksLocalDataSource.getSavedBooks(isDownloaded)
     }
     suspend fun deleteBook(id: Int){
         booksLocalDataSource.deleteBook(id)
+    }
+    suspend fun unSaveBook(id: Int){
+        booksLocalDataSource.unSaveBook(id)
     }
     suspend fun isDownloaded(id: Int): Boolean{
         return booksLocalDataSource.isDownloaded(id)

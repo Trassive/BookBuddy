@@ -12,13 +12,19 @@ class BooksLocalDataSource(private val booksDao: BooksDao) {
             booksDao.updateProgress(it)
         }
     }
+    suspend fun unSaveBook(id: Int){
+        booksDao.deleteBookEntity(id)
+    }
     suspend fun saveProgress(locator: SavedLocator){
         booksDao.updateProgress(locator)
     }
-    suspend fun getSavedBooks(isDownloaded: Boolean): Flow<List<SavedBook>> {
+    fun getSavedBooks(isDownloaded: Boolean): Flow<List<SavedBook>> {
         return booksDao.getBooksList(isDownloaded)
     }
-    suspend fun getBook(id: Int): Map<SavedBook, SavedLocator> {
+    suspend fun getBookAndLocator(id: Int): Map<SavedBook, SavedLocator> {
+        return booksDao.getBookAndLocator(id)
+    }
+    suspend fun getBook(id: Int): Flow<SavedBook?> {
         return booksDao.getBook(id)
     }
     suspend fun deleteBook(id: Int){

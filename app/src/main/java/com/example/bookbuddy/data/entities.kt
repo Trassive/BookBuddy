@@ -16,7 +16,7 @@ data class SavedBook(
     val description: String?,
     val categories:String,
     val authors: String,
-    val isDownloaded: Boolean,
+    @ColumnInfo("download_path") val downloadPath: String?,
     @ColumnInfo("image_url") val coverImage: String,
 //    https for saved file for downloaded
     @ColumnInfo("file_url")val fileUrl: String

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.net.toUri
 import com.example.bookbuddy.network.BooksApi
 import com.example.bookbuddy.network.RemoteBookList
+import com.example.bookbuddy.network.RemoteBooks
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -17,6 +18,7 @@ import java.net.URL
 interface BooksRemoteRepository{
     suspend fun downloadBook(url: String, id: Int): Flow<InternalDownloadState>
     suspend fun getBooksList(url: String? = null, search: String? = null, topic: String? = null): RemoteBookList
+    suspend fun getBook(id: Int): RemoteBookList
 }
 class BooksRemoteRepositoryImpl(
     private val booksApi: BooksApi,
@@ -30,6 +32,10 @@ class BooksRemoteRepositoryImpl(
     override suspend fun getBooksList(url: String?, search: String?, topic: String?): RemoteBookList {
 
         return booksApi.getBooks(url,createQueryMap(search = search, topic = topic))
+    }
+
+    override suspend fun getBook(id: Int): RemoteBookList {
+        return booksApi.getBooks(queries = mapOf("ids" to id.toString()))
     }
 
     private fun ResponseBody.saveFile(fileName: String): Flow<InternalDownloadState> {

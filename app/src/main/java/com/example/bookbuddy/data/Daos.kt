@@ -1,4 +1,4 @@
-package com.example.bookbuddy.data
+ package com.example.bookbuddy.data
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -19,7 +19,14 @@ interface BooksDao{
     suspend fun updateProgress(locator: SavedLocator)
 
     //For Saved Book list
-    @Query("SELECT * FROM offline_books WHERE isDownloaded = :isDownloaded")
+    @Query(
+        """
+        SELECT * FROM offline_books 
+        WHERE 
+        (download_path IS NOT NULL AND :isDownloaded = 1) 
+        OR (download_path IS NULL AND :isDownloaded = 0)
+        """
+    )
     fun getBooksList(isDownloaded: Boolean): Flow<List<SavedBook>>
 
     //Provide book with locator
@@ -28,9 +35,13 @@ interface BooksDao{
         JOIN locator ON offline_books.id = locator.bookId
         WHERE id = :id
         """)
-    suspend fun getBook(id: Int): Map<SavedBook,SavedLocator>
+    suspend fun getBookAndLocator(id: Int): Map<SavedBook,SavedLocator>
 
-    @Query("SELECT isDownloaded FROM offline_books WHERE id = :id")
+    @Query("SELECT * FROM offline_books WHERE id = :id")
+    fun getBook(id: Int): Flow<SavedBook?>
+
+
+    @Query("SELECT CASE WHEN download_path IS NULL THEN 'false' ELSE 'true' END FROM offline_books WHERE id =:id ;\n")
     suspend fun isDownloaded(id: Int): Boolean
 
     @Query("DELETE FROM offline_books WHERE id = :id")

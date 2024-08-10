@@ -10,13 +10,11 @@ import com.example.bookbuddy.network.RemoteBookList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onCompletion
-import java.net.URL
+import kotlinx.coroutines.flow.transformLatest
 
 interface HomeFeedRepository{
     suspend fun getBooks(): Books
@@ -26,10 +24,11 @@ interface HomeFeedRepository{
 //    suspend fun deleteBook(id: Int)
 }
 interface DetailsRepository{
-    suspend fun getBookDetails(book: Book): Book
+    suspend fun getBook(id: Int): Flow<Book>
     suspend fun downloadBook(book: Book): Flow<DownloadState>
     suspend fun deleteBook(id: Int)
     suspend fun saveBook(book: Book)
+    suspend fun unSaveBook(id: Int)
 }
 interface LibraryRepository{
     suspend fun getSavedBooks(): Flow<List<Book>>
@@ -60,9 +59,12 @@ class BooksRepository(
     }
 
     override suspend fun saveBook(book: Book) {
-        val description = bookDetailsRepository.getBookDetails(title = book.title, author = book.authors[0])
-        booksLocalRepository.saveBook(book.toSavedBook(false, description))
-       }
+        booksLocalRepository.saveBook(book.toSavedBook(downloadPath = null))
+    }
+
+    override suspend fun unSaveBook(id: Int) {
+        booksLocalRepository.unSaveBook(id)
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun getSavedBooks(): Flow<List<Book>> {
@@ -70,7 +72,7 @@ class BooksRepository(
             .distinctUntilChanged()
             .flatMapLatest {savedBooks->
                 flow{
-                    emit(savedBooks.map { it.toBook(false) } )
+                    emit(savedBooks.map { it.toBook() } )
                 }
             }
     }
@@ -81,7 +83,7 @@ class BooksRepository(
             .distinctUntilChanged()
             .flatMapLatest {savedBooks->
                 flow{
-                    emit(savedBooks.map { it.toBook(true) } )
+                    emit(savedBooks.map { it.toBook() } )
                 }
             }
     }
@@ -90,10 +92,17 @@ class BooksRepository(
         booksLocalRepository.deleteBook(id)
     }
 
-    override suspend fun getBookDetails(book: Book): Book {
-        return book.copy(
-            description = bookDetailsRepository.getBookDetails(title = book.title, author = book.authors[0])
-        )
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override suspend fun getBook(id: Int): Flow<Book> {
+        return booksLocalRepository.getBook(id).transformLatest {savedBook->
+            if(savedBook!=null){
+                emit(savedBook.toBook())
+            } else{
+                val book = booksRemoteRepository.getBook(id).toBooks().books[0]
+                val description = bookDetailsRepository.getBookDetails(title = book.title, author = book.authors[0])
+                emit(book.copy(description = description))
+            }
+        }
     }
 
     override suspend fun downloadBook(book: Book): Flow<DownloadState> {
@@ -103,7 +112,7 @@ class BooksRepository(
                     is InternalDownloadState.Downloading-> DownloadState.Downloading(internalDownloadState.progress)
                     is InternalDownloadState.Failed -> DownloadState.Failed(internalDownloadState.error)
                     is InternalDownloadState.Finished -> {
-                        booksLocalRepository.saveBook(book.copy(downloadLink = internalDownloadState.filePath).toSavedBook(true,book.description!!))
+                        booksLocalRepository.saveBook(book.toSavedBook(downloadPath = internalDownloadState.filePath))
                         DownloadState.Finished
                     }
                 }
@@ -123,7 +132,8 @@ private fun RemoteBookList.toBooks(): Books{
             authors = book.authors.map { it.name },
             cover = book.formats.cover,
             downloadLink = book.formats.epub,
-            isDownloaded = false
+            isDownloaded = false,
+            isSaved = false
         )
 
     }
@@ -134,19 +144,19 @@ private fun RemoteBookList.toBooks(): Books{
         books = books
     )
 }
-private fun Book.toSavedBook(isDownloaded: Boolean, description: String): SavedBook{
+private fun Book.toSavedBook(downloadPath: String?, description: String? = null): SavedBook{
     return SavedBook(
         id = this.id,
         title = this.title,
         categories = this.categories.joinToString(),
         authors = this.authors.joinToString(),
-        isDownloaded = isDownloaded,
+        downloadPath = downloadPath,
         coverImage = this.cover,
         fileUrl = this.downloadLink,
-        description = description
+        description = description?:this.description
     )
 }
-private fun SavedBook.toBook(isDownloaded: Boolean): Book{
+private fun SavedBook.toBook(): Book{
     return Book(
         id = this.id,
         title = this.title,
@@ -155,7 +165,8 @@ private fun SavedBook.toBook(isDownloaded: Boolean): Book{
         cover = this.coverImage,
         downloadLink = this.fileUrl,
         description = this.description,
-        isDownloaded = isDownloaded
+        isDownloaded = this.downloadPath != null,
+        isSaved = true
     )
 }
 enum class Filter(title: String){

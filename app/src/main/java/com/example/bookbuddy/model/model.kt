@@ -14,5 +14,6 @@ data class Book(
     val cover: String,
     val description: String? =null,
     val downloadLink: String,
-    val isDownloaded: Boolean
+    val isDownloaded: Boolean,
+    val isSaved: Boolean
 )

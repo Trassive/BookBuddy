@@ -1,4 +1,4 @@
-package com.example.bookbuddy.ui
+package com.example.bookbuddy.ui.detailscreen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,7 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.request.CachePolicy
 import com.example.bookbuddy.R
+import com.example.bookbuddy.ui.detailscreen.DetailScreenState
+import com.example.bookbuddy.ui.detailscreen.DetailScreenViewModel
 import com.example.bookbuddy.ui.util.CoilImage
 import com.example.bookbuddy.ui.util.LottieAnimationComposable
 import com.example.bookbuddy.ui.util.parallaxLayoutModifier
@@ -42,10 +45,13 @@ fun DetailView(detailViewState: DetailScreenState.DetailView) {
             CoilImage(
                 id = detailViewState.book.id,
                 imageUrl = detailViewState.book.downloadLink,
-//                diskCachePolicy = ,
+                diskCachePolicy = if(detailViewState.book.isSaved) CachePolicy.ENABLED else CachePolicy.DISABLED,
                 modifier = Modifier
                     .parallaxLayoutModifier(scrollState,2)
             )
+        }
+        Box(){
+
         }
     }
 }

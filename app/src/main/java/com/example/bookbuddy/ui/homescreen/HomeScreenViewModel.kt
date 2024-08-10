@@ -1,4 +1,4 @@
-package com.example.bookbuddy.ui
+package com.example.bookbuddy.ui.homescreen
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
@@ -60,8 +60,11 @@ class HomeScreenViewModel(private val homeFeedRepository: HomeFeedRepository): V
                 }
                 else -> {
                     HomeUiState.HomeView(
-                        carauselBooks = previousLoadedBooks.subList(0,min(5,previousLoadedBooks.size)),
-                        bookList = previousLoadedBooks.drop(min(5,previousLoadedBooks.size))
+                        carauselBooks = previousLoadedBooks.subList(
+                            0,
+                            min(5, previousLoadedBooks.size)
+                        ),
+                        bookList = previousLoadedBooks.drop(min(5, previousLoadedBooks.size))
                     )
                 }
             }
@@ -79,8 +82,8 @@ class HomeScreenViewModel(private val homeFeedRepository: HomeFeedRepository): V
                     previous = books.previous
                     next = books.next
                     HomeUiState.HomeView(
-                        carauselBooks = books.books.subList(0,min(5,books.books.size)),
-                        bookList =books.books.drop(min(5,books.books.size))
+                        carauselBooks = books.books.subList(0, min(5, books.books.size)),
+                        bookList = books.books.drop(min(5, books.books.size))
                     )
                 } catch (e: Exception) {
                     if (e is IOException) {
@@ -116,7 +119,7 @@ class HomeScreenViewModel(private val homeFeedRepository: HomeFeedRepository): V
         }
     }
     fun onSearchQueryChange(query: String){
-        _UiState.update { 
+        _UiState.update {
             HomeUiState.SearchView(searchText = query)
         }
     }

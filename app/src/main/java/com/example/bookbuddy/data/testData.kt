@@ -9,15 +9,23 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
 
+
+val string: ()->String = {
+    var string = "Epic high fantasy trilogy following the journey of Frodo Baggins"
+    repeat(5){
+        string = string.plus(string)
+    }
+    string
+}
 object fakeData {
     val books = listOf(
             Book(
                 id = 1,
                 title = "The Lord of the Rings",
-                categories = listOf("Fantasy", "Adventure"),
+                categories = listOf("Fantasy", "Adventure","Fantasy","Adventure","Adventure"),
                 authors = listOf("J.R.R. Tolkien","J.R.R. Tolkien"),
                 cover = "https://example.com/lotr.jpg",
-                description = "Epic high fantasy trilogy following the journey of Frodo Baggins.",
+                description = string(),
                 downloadLink = "https://example.com/lotr.pdf",
                 isDownloaded = false,
                 isSaved = false

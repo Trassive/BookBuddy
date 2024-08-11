@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,11 +15,13 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,7 +38,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.request.CachePolicy
@@ -64,62 +69,86 @@ fun DetailScreen(detailScreenViewModel: DetailScreenViewModel){
 
 @Composable
 fun DetailView(detailViewState: DetailScreenState.DetailView) {
-    val scrollState = rememberScrollState()
-    Column{
-        BoxWithConstraints(
-            Modifier
-                .weight(6f)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.surfaceVariant,
-                            Color(0xFFECF6E5),
+    BoxWithConstraints{
+        Column {
+            BoxWithConstraints(
+                Modifier
+                    .weight(6f)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                Color(0xFFECF6E5),
+                            )
                         )
                     )
-                )
-                .fillMaxWidth()
-        ){
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                shadowElevation = 8.dp,
-                modifier = Modifier
-                .align(Alignment.Center)
-                .width(maxWidth * 0.4f)
-                .aspectRatio(2 / 3f)
-            ){
-                CoilImage(
-                    id = detailViewState.book.id,
-                    imageUrl = detailViewState.book.downloadLink,
-                    diskCachePolicy = if (detailViewState.book.isSaved) CachePolicy.ENABLED else CachePolicy.DISABLED,
-                    modifier = Modifier.fillMaxSize().background(Color.Cyan)
+                    .fillMaxWidth()
+            ) {
+                Surface(
+                    shape = MaterialTheme.shapes.large,
+                    shadowElevation = 8.dp,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .width(maxWidth * 0.4f)
+                        .aspectRatio(2 / 3f)
+                ) {
+                    CoilImage(
+                        id = detailViewState.book.id,
+                        imageUrl = detailViewState.book.downloadLink,
+                        diskCachePolicy = if (detailViewState.book.isSaved) CachePolicy.ENABLED else CachePolicy.DISABLED,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Cyan)
+                    )
+                }
+                Text(
+                    text = detailViewState.book.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.W600,
+                    color = Color(0xFF3C4142),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .width(maxWidth * 0.6f)
+                        .align(Alignment.TopCenter)
+                        .offset(y = maxHeight / 2 + maxWidth * 0.2f * 1.5f + 30.dp)
+
                 )
             }
-        }
 
-        Surface(
-            Modifier
-                .weight(4f)
-                .fillMaxSize()){
-            LazyColumn(
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.Start,
-                contentPadding = PaddingValues(horizontal = dimensionResource(id = R.dimen.large_padding), vertical = 50.dp),
-                modifier = Modifier.fillMaxSize()
+            Surface(
+                Modifier
+                    .weight(4f)
+                    .fillMaxSize()
             ) {
-                customStickyHeader(
-                    authors = detailViewState.book.authors,
-                    categories = detailViewState.book.categories
-                )
-                item {
-                    Text(
-                        text = "Overview",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.large_padding))
+                LazyColumn(
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.Start,
+                    contentPadding = PaddingValues(
+                        horizontal = dimensionResource(id = R.dimen.large_padding),
+                        vertical = 50.dp
+                    ),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    customStickyHeader(
+                        authors = detailViewState.book.authors,
+                        categories = detailViewState.book.categories
                     )
-                    Text(text = detailViewState.book.description!!)
+                    item {
+                        Text(
+                            text = "Overview",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.large_padding))
+                        )
+                        Text(text = detailViewState.book.description!!)
+                    }
                 }
             }
+        }
+        Button({},modifier = Modifier
+            .align(Alignment.TopCenter)
+            .offset(y = (maxHeight * 0.6f) - 24.dp)){
+            Text(text = "Action")
         }
     }
 }

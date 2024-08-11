@@ -25,6 +25,9 @@ object AppShapes {
     val Shapes.bottomRoundedLarge
         get(): CornerBasedShape = RoundedCornerShape(bottomEnd = 32.dp, bottomStart = 32.dp)
 
+    val Shapes.bottomRoundedMedium
+        get(): CornerBasedShape = RoundedCornerShape(bottomEnd = 16.dp, bottomStart = 16.dp)
+
     // Material 3 Shapes
     val shapes = Shapes(
         extraSmall = extraSmallShape,

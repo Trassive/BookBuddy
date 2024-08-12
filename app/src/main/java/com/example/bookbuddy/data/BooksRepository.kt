@@ -31,9 +31,8 @@ interface DetailsRepository{
     suspend fun unSaveBook(id: Int)
 }
 interface LibraryRepository{
-    suspend fun getSavedBooks(): Flow<List<Book>>
-    suspend fun getDownloadedBooks(): Flow<List<Book>>
-    suspend fun deleteBook(id: Int)
+    fun getSavedBooks(): Flow<List<Book>>
+    fun getDownloadedBooks(): Flow<List<Book>>
 }
 interface ReadiumBookRepository{
     suspend fun updateProgress()
@@ -67,7 +66,7 @@ class BooksRepository(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override suspend fun getSavedBooks(): Flow<List<Book>> {
+    override fun getSavedBooks(): Flow<List<Book>> {
         return booksLocalRepository.getSavedBook(false)
             .distinctUntilChanged()
             .flatMapLatest {savedBooks->
@@ -78,7 +77,7 @@ class BooksRepository(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override suspend fun getDownloadedBooks(): Flow<List<Book>> {
+    override fun getDownloadedBooks(): Flow<List<Book>> {
         return booksLocalRepository.getSavedBook(false)
             .distinctUntilChanged()
             .flatMapLatest {savedBooks->

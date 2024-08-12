@@ -14,7 +14,7 @@ class BooksLocalRepository(private val booksLocalDataSource: BooksLocalDataSourc
     suspend fun getBook(id: Int): Flow<SavedBook?> {
         return booksLocalDataSource.getBook(id)
     }
-    suspend fun getSavedBook(isDownloaded: Boolean): Flow<List<SavedBook>> {
+    fun getSavedBook(isDownloaded: Boolean): Flow<List<SavedBook>> {
        return  booksLocalDataSource.getSavedBooks(isDownloaded)
     }
     suspend fun deleteBook(id: Int){

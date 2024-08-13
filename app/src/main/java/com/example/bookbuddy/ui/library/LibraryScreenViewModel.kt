@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.stateIn
 
-class LibraryScreenViewModel(private val libraryRepository: LibraryRepository): ViewModel() {
+class LibraryScreenViewModel(libraryRepository: LibraryRepository): ViewModel() {
     val uiState: StateFlow<LibraryUiState> = combineTransform(flow = libraryRepository.getSavedBooks(),flow2 = libraryRepository.getDownloadedBooks()){ savedBooks, downloadedBooks->
         emit(LibraryUiState(savedTabBooks = savedBooks,downloadedTabBooks = downloadedBooks))
     }.stateIn(

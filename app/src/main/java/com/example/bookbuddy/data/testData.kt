@@ -1,13 +1,6 @@
 package com.example.bookbuddy.data
 
-import android.content.Context
 import com.example.bookbuddy.model.Book
-import com.example.bookbuddy.model.Books
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.http.DefaultHttpClient
-import org.readium.r2.streamer.PublicationOpener
-import org.readium.r2.streamer.parser.DefaultPublicationParser
 
 
 val string: ()->String = {

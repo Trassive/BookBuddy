@@ -55,7 +55,7 @@ fun HomeScreen(viewModel: HomeScreenViewModel){
             LottieAnimationComposable(R.raw.empty,modifier = Modifier.fillMaxSize())
         }
         when(val state = homeScreenUiState){
-            is HomeUiState.isLoading -> {
+            is HomeUiState.IsLoading -> {
                 LottieAnimationComposable(R.raw.loading,modifier = Modifier.fillMaxSize())
             }
             is HomeUiState.HomeView ->{
@@ -113,7 +113,7 @@ fun HomeViewPreview(){
         Surface{
             HomeViewContent(
                 homeUiState = HomeUiState.HomeView(
-                    carauselBooks = fakeData.books,
+                    carouselBooks = fakeData.books,
                     bookList = fakeData.books
                 )
             )

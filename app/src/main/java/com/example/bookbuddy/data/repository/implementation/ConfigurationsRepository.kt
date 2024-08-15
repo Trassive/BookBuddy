@@ -1,4 +1,4 @@
-package com.example.bookbuddy.data.local
+package com.example.bookbuddy.data.repository.implementation
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.IOException

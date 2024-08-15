@@ -2,24 +2,39 @@ package com.example.bookbuddy.ui.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bookbuddy.data.LibraryRepository
-import com.example.bookbuddy.model.Book
-import kotlinx.coroutines.flow.SharingStarted
+import com.example.bookbuddy.data.repository.interfaces.OfflineBookRepository
+import com.example.bookbuddy.model.LibraryBook
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combineTransform
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class LibraryScreenViewModel(libraryRepository: LibraryRepository): ViewModel() {
-    val uiState: StateFlow<LibraryUiState> = combineTransform(flow = libraryRepository.getSavedBooks(),flow2 = libraryRepository.getDownloadedBooks()){ savedBooks, downloadedBooks->
-        emit(LibraryUiState(savedTabBooks = savedBooks,downloadedTabBooks = downloadedBooks))
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = LibraryUiState()
-    )
+class LibraryScreenViewModel(private val offlineBookRepository: OfflineBookRepository): ViewModel() {
+    private val _uiState = MutableStateFlow(LibraryUiState())
+    val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
+
+    private fun getBooks() {
+        viewModelScope.launch{
+            combine(
+                flow = offlineBookRepository.getSavedBooks(),
+                flow2 = offlineBookRepository.getDownloadedBooks()
+            ) { savedBooks, downloadedBooks ->
+                LibraryUiState(savedTabBooks = savedBooks, downloadedTabBooks = downloadedBooks)
+            }.distinctUntilChanged()
+            .collectLatest {state->
+                _uiState.update {
+                    LibraryUiState(state.savedTabBooks, state.downloadedTabBooks)
+                }
+            }
+        }
+    }
 
 }
 data class LibraryUiState(
-    val savedTabBooks: List<Book> = listOf(),
-    val downloadedTabBooks: List<Book> = listOf()
+    val savedTabBooks: List<LibraryBook> = listOf(),
+    val downloadedTabBooks: List<LibraryBook> = listOf()
 )

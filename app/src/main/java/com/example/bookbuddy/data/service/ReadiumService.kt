@@ -1,12 +1,13 @@
-package com.example.bookbuddy.data
+package com.example.bookbuddy.data.service
 
 import android.content.Context
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.http.DefaultHttpClient
 
-class ReadiumReppository(private val readium: ReadiumBookRepository, private val context: Context){
+class ReadiumService( private val context: Context){
     suspend fun PublicationProvider(id: Int){
         val asset = AssetRetriever(context.contentResolver, httpClient = DefaultHttpClient())
 //        asset.retrieve()
     }
+
 }

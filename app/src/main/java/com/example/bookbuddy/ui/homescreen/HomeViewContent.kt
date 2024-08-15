@@ -61,7 +61,7 @@ fun HomeViewContent(homeUiState: HomeUiState.HomeView, modifier: Modifier = Modi
                     .fillMaxWidth()
             ) {
                 CarouselPager(
-                    books = homeUiState.carauselBooks,
+                    books = homeUiState.carouselBooks,
                     onDrag = {},
                     modifier = Modifier.fillMaxSize()
                 )

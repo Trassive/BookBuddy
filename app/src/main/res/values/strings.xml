@@ -14,8 +14,10 @@
     <string name="expand">Click to expand</string>
     <string name="back_button">Back Button</string>
     <string name="network_Error">Network connection error. Try again later</string>
-    <string name="error">Error</string>
+    <string name="error">An error occurred. Please try again later</string>
     <string name="search_here">Search here…</string>
     <string name="click_to_search">Click to search</string>
     <string name="jump_to">Jump to this section</string>
+    <string name="illegal_arguement">"Requested book is not valid"</string>
+    <string name="unknown_error"> An unknown error has occurred. Please try again later</string>
 </resources>

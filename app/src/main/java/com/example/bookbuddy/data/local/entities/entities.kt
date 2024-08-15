@@ -1,30 +1,25 @@
-package com.example.bookbuddy.data
+package com.example.bookbuddy.data.local.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-/*  Stores books both saved or download
-    using *isDownloaded*
-    distinct properties are nullable
-*/
+//stores the book metadata
 
 @Entity(tableName = "offline_books")
 data class SavedBook(
     @PrimaryKey() val id: Int,
     val title: String,
-    val description: String?,
+    val description: String,
     val categories:String,
     val authors: String,
-    @ColumnInfo("download_path") val downloadPath: String?,
     @ColumnInfo("image_url") val coverImage: String,
-//    https for saved file for downloaded
-    @ColumnInfo("file_url")val fileUrl: String
 )
 
+//stores the last read position for bookmarks
 @Entity("locator")
 data class SavedLocator(
-    @PrimaryKey val bookId: String,
+    @PrimaryKey val bookId: Int,
     val href: String,
     val type: String,
     val progression: Float,
@@ -35,4 +30,12 @@ data class SavedLocator(
     val textAfter: String?,
     val textHighlight: String?,
     val title: String?
+)
+
+//For storing the resource to access the book
+@Entity("book_resource")
+data class BookResource(
+    @PrimaryKey() val bookId: Int,
+    @ColumnInfo("downloaded_path") val downloadPath: String?,
+    @ColumnInfo("download_link")val downloadLink: String
 )

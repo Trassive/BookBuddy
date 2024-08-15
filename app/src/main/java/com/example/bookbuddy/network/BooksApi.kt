@@ -3,6 +3,7 @@ package com.example.bookbuddy.network
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.QueryMap
 import retrofit2.http.Streaming
@@ -14,7 +15,7 @@ interface BooksApi {
 
     @Streaming
     @GET
-    suspend fun downloadBook(@Url downloadUrl: String): ResponseBody
+    suspend fun downloadBook(@Url downloadUrl: String): Response<ResponseBody>
 
 }
 
@@ -23,11 +24,11 @@ data class RemoteBookList(
     @SerialName("count") val count: Int,
     @SerialName("next") val  next: String?,
     @SerialName("previous") val  previous: String?,
-    @SerialName("results") val books: List<RemoteBooks>
+    @SerialName("results") val books: List<RemoteBook>
 )
 
 @Serializable
-data class RemoteBooks(
+data class RemoteBook(
     @SerialName("id") val id: Int,
     @SerialName("title") val title: String,
     @SerialName("subjects") val categories: List<String>,

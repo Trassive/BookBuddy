@@ -35,7 +35,6 @@ import coil.request.CachePolicy
 import com.example.bookbuddy.R
 import com.example.bookbuddy.data.fakeData
 import com.example.bookbuddy.model.Book
-import com.example.bookbuddy.model.Books
 import com.example.compose.BookBuddyTheme
 
 @SuppressLint("UnusedBoxWithConstraintsScope")

@@ -40,21 +40,18 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.request.CachePolicy
 import com.example.bookbuddy.R
-import com.example.bookbuddy.data.fakeData
-import com.example.bookbuddy.model.Book
-import com.example.bookbuddy.ui.util.BookList
+import com.example.bookbuddy.model.LibraryBook
 import com.example.compose.BookBuddyTheme
 import kotlinx.coroutines.launch
 
 @Composable
 fun LibraryScreen(viewModel: LibraryScreenViewModel){
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    CustomTabs(savedbooks = state.savedTabBooks , downloadedBooks = state.downloadedTabBooks)
+    CustomTabs(savedbooks = state.savedTabBooks , downloadedLibraryBooks = state.downloadedTabBooks)
 }
 @Composable
-fun CustomTabs(savedbooks: List<Book>, downloadedBooks: List<Book>) {
+fun CustomTabs(savedbooks: List<LibraryBook>, downloadedLibraryBooks: List<LibraryBook>) {
     val pagerState = rememberPagerState { 2 }
     val scope = rememberCoroutineScope()
 
@@ -109,14 +106,14 @@ fun CustomTabs(savedbooks: List<Book>, downloadedBooks: List<Book>) {
             }
         }
         HorizontalPager(state = pagerState) {item->
-            val books = if(item == 0) savedbooks else downloadedBooks
-            BookList(
-                books = books,
-                onClick = {},
-                onLongPress = {},
-                modifier = Modifier.fillMaxSize(),
-                diskCachePolicy = CachePolicy.ENABLED
-            )
+            val books = if(item == 0) savedbooks else downloadedLibraryBooks
+//            BookList(
+//                books = books,
+//                onClick = {},
+//                onLongPress = {},
+//                modifier = Modifier.fillMaxSize(),
+//                diskCachePolicy = CachePolicy.ENABLED
+//            )
         }
     }
 }
@@ -170,7 +167,7 @@ fun CustomTabIndicator(tabPositions: List<TabPosition>,pagerState: PagerState){
 fun CustomTabPreview(){
     BookBuddyTheme {
         Surface{
-            CustomTabs(fakeData.books,fakeData.books)
+//            CustomTabs(fakeData.books.,fakeData.books)
         }
     }
 }

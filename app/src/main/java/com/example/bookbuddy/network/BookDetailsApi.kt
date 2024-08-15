@@ -11,11 +11,11 @@ interface BookDetailsApi {
         @Query("q") query: String,
         @Query("startIndex") startIndex: Int =0,
         @Query("maxResults") maxResults: Int =1
-    ): Results
+    ): BookMetadata
 }
 
 @Serializable
-data class Results(
+data class BookMetadata(
     @SerialName("items") val items: Items
 )
 @Serializable

@@ -3,50 +3,66 @@ package com.example.bookbuddy.ui.detailscreen
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bookbuddy.data.DetailsRepository
-import com.example.bookbuddy.data.DownloadState
-import com.example.bookbuddy.data.SavedBook
+import com.example.bookbuddy.R
+import com.example.bookbuddy.data.repository.interfaces.BookDetailsRepository
 import com.example.bookbuddy.model.Book
+import com.example.bookbuddy.model.DownloadState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class DetailScreenViewModel(
     saveStateHandle: SavedStateHandle,
-    private val detailsRepository: DetailsRepository
+    private val detailsRepository: BookDetailsRepository
 ): ViewModel() {
     private val id: Int = checkNotNull(saveStateHandle["//TODO"])
-    val uiState: StateFlow<DetailScreenState> = getBook().stateIn(
-        scope = viewModelScope,
-        initialValue = DetailScreenState.Loading,
-        started = SharingStarted.WhileSubscribed(5000)
-    )
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getBook(): Flow<DetailScreenState> = flow {
-        emit(DetailScreenState.Loading)
-        try {
-            val book = detailsRepository.getBook(id).transformLatest<Book,DetailScreenState> {book->
-                emit(DetailScreenState.DetailView(book = book))
+    private val _uiState: MutableStateFlow<DetailScreenState> = MutableStateFlow(DetailScreenState.Loading)
+    val uiState: StateFlow<DetailScreenState> = _uiState.asStateFlow()
+    init{
+        getBook()
+    }
+    private fun getBook() {
+        viewModelScope.launch{
+            _uiState.update {
+                try {
+                    DetailScreenState.DetailView(book = detailsRepository.getBookDetails(id))
+                } catch (e: Exception) {
+                    val error: Int = if(e is IllegalArgumentException){
+                        R.string.illegal_arguement
+                    } else {
+                        R.string.error
+                    }
+                    DetailScreenState.Error(listOf(error))
+                }
             }
-        } catch (e: Exception) {
-            emit(DetailScreenState.Error(listOf()))
         }
     }
 
     fun downloadBook(): StateFlow<DownloadState> = flow<DownloadState>{
 
         detailsRepository.downloadBook((uiState.value as? DetailScreenState.DetailView)!!.book)
+    }.map{state ->
+        if(state is DownloadState.Failed){
+            getBook()
+        }
+        state
     }.stateIn(
         scope = viewModelScope,
         initialValue = DownloadState.Idle,
         started = SharingStarted.WhileSubscribed(5000)
-    )
+    ).also{
+        getBook()
+    }
     fun toggleBookState(){
         viewModelScope.launch {
             with((uiState.value as? DetailScreenState.DetailView)!!.book){
@@ -58,6 +74,7 @@ class DetailScreenViewModel(
                     detailsRepository.saveBook(this)
                 }
             }
+            getBook()
         }
     }
 }

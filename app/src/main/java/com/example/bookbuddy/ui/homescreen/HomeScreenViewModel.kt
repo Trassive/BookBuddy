@@ -24,7 +24,6 @@ class HomeScreenViewModel(private val bookCatalogueRepository: BookCatalogueRepo
     private var retryJob: Job? = null
     private var previousLoadedBooks: List<Book> = listOf()
 
-    private var shouldUpdate: Boolean = false
     init{
         getBooks()
     }

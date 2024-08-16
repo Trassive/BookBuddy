@@ -1,9 +1,15 @@
 package com.example.bookbuddy.ui.util
 
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -15,14 +21,15 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -31,31 +38,30 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.util.lerp
 import com.example.bookbuddy.R
 import com.example.bookbuddy.data.fakeData
 import com.example.bookbuddy.model.Book
-import com.example.bookbuddy.ui.theme.AppShapes.bottomRoundedLarge
 import com.example.compose.BookBuddyTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
-//Drag left
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CarouselPager(
@@ -63,34 +69,22 @@ fun CarouselPager(
     onDrag: (Int) -> Unit,
     modifier: Modifier = Modifier
 ){
-    BoxWithConstraints(modifier = modifier
-        .fillMaxSize()
-        .background(
-            Brush.verticalGradient(
-                listOf(
-                    MaterialTheme.colorScheme.surfaceContainerHigh,
-                    MaterialTheme.colorScheme.surfaceContainerLow
-                )
-            )
-        )
-    ){
-
+    BoxWithConstraints(modifier = modifier.fillMaxSize()){
         val pagerState = rememberPagerState {
             books.size
         }
-        val cardWidth = min(maxWidth,200.dp)
+        val cardWidth = min(maxWidth*0.6f,200.dp)
         LaunchedEffect(key1 = Unit) {
             launch {
                 while(true){
                     delay(6000)
                     with(pagerState) {
                         val target = if (currentPage < pageCount - 1) currentPage + 1 else 0
-
                         animateScrollToPage(
                             page = target,
                             animationSpec = tween(
-                                durationMillis = 500,
-                                easing = FastOutSlowInEasing
+                                durationMillis = 1000,
+                                easing = EaseOut
                             )
                         )
                     }
@@ -99,20 +93,23 @@ fun CarouselPager(
         }
 
         HorizontalPager(
-            pageSpacing = maxWidth-cardWidth,
+            pageSpacing = (maxWidth-cardWidth)*0.3f,
             state = pagerState,
-            contentPadding = PaddingValues(horizontal = (maxWidth-cardWidth)/2, vertical = dimensionResource(
-                id = R.dimen.large_padding
-            )),
-            pageSize = PageSize.Fixed(cardWidth),
+            contentPadding = PaddingValues(
+                horizontal = (maxWidth-cardWidth)/2,
+                vertical = dimensionResource(id = R.dimen.large_padding)),
+            pageSize = PageSize.Fill,
             modifier = Modifier.fillMaxSize()
             ) {page->
-            CarouselCard(
-                book = books[page],
-                pagerState = pagerState,
-                page = page,
-                modifier = Modifier
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                CarouselCard(
+                    book = books[page],
+                    pagerState = pagerState,
+                    page = page,
+                    onDrag = onDrag,
+                    modifier = Modifier
+                )
+            }
         }
     }
 }
@@ -122,12 +119,41 @@ fun CarouselCard(
     book: Book,
     modifier: Modifier,
     pagerState: PagerState,
+    onDrag: (Int) -> Unit,
     page: Int
 ) {
+    val requiredDrag = with(LocalDensity.current){20.dp.toPx()}
+
+    val state = remember {
+        AnchoredDraggableState(
+            anchors = DraggableAnchors{
+                DragAnchors.Start to 0f
+                DragAnchors.End to requiredDrag
+            },
+            initialValue = DragAnchors.Start,
+            positionalThreshold = {totalDistance: Float -> totalDistance*0.8f },
+            velocityThreshold = { requiredDrag*2f},
+            animationSpec = spring(
+                stiffness = Spring.StiffnessHigh,
+                dampingRatio = Spring.DampingRatioLowBouncy
+            ),
+        )
+    }
+    LaunchedEffect(key1 = state.currentValue) {
+        if(state.currentValue == DragAnchors.End){
+            onDrag(book.id)
+        }
+    }
     val pageOffset = pagerState.calculateCurrentOffsetForPage(page).absoluteValue
+
     ElevatedCard(
         modifier = modifier
-            .fillMaxWidth(),
+            .offset { IntOffset(y = state.offset.toInt(), x = 0) }
+            .anchoredDraggable(
+                state = state,
+                orientation = Orientation.Vertical,
+                enabled = pagerState.currentPage == page
+            ),
         elevation = CardDefaults.elevatedCardElevation(
             defaultElevation = 4.dp
         ),
@@ -136,24 +162,23 @@ fun CarouselCard(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.large_padding))
-
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.medium_padding))
         ) {
             CoilImage(
                 modifier = Modifier
-                    .padding(bottom = dimensionResource(id = R.dimen.large_padding))
                     .weight(1f)
-                    .align(Alignment.CenterHorizontally)
-                    .aspectRatio(2 / 3f)
+                    .fillMaxSize()
                     .clip(MaterialTheme.shapes.large)
                     .graphicsLayer {
 
                         val scale = lerp(1f, 1.75f, pageOffset)
-                        scaleX *= scale
-                        scaleY *= scale
-                    },
+                        scaleX *= scale*state.progress
+                        scaleY *= scale*state.progress
+                    }
+                    .background(Color.Cyan)
+                ,
                 id = book.id,
-                imageUrl = book.cover
+                imageUrl = book.coverImage
             )
             Text(
                 text = book.title,
@@ -161,10 +186,12 @@ fun CarouselCard(
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .padding(horizontal = dimensionResource(id = R.dimen.small_padding))
+                    .padding( dimensionResource(id = R.dimen.small_padding))
             )
-             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = dimensionResource(id = R.dimen.small_padding))
-             ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = dimensionResource(id = R.dimen.small_padding))
+            ) {
                 Text(
                     text = book.authors.first(),
                     textAlign = TextAlign.Center,
@@ -210,7 +237,6 @@ private fun DragToListen(pageOffset: Float) {
 @Composable
 private fun DragArea() {
     Box {
-
         Icon(
             painterResource(id = R.drawable.round_expand_more_24), "down",
             modifier = Modifier
@@ -224,19 +250,21 @@ private fun DragArea() {
 fun PagerState.calculateCurrentOffsetForPage(page: Int): Float {
     return (currentPage - page) + currentPageOffsetFraction
 }
-@Preview(showBackground = true)
+enum class DragAnchors {
+    Start,
+    End,
+}
+@Preview
 @Composable
 fun SliderPreview(){
     BookBuddyTheme {
-        Column(Modifier.fillMaxSize()){
+        Surface(Modifier.fillMaxSize()){
             CarouselPager(
                 books = fakeData.books,
                 onDrag = {},
-                modifier = Modifier.weight(4f)
+                modifier = Modifier.requiredHeight(400.dp)
             )
-            Surface(Modifier.weight(6f)) {
 
-            }
         }
     }
 }

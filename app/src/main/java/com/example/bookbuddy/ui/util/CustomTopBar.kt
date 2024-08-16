@@ -33,9 +33,9 @@ private val EMPTY = {}
 fun CustomTopBar(
     topBarTitle: String,
     onNavigationIconClick: () -> Unit = EMPTY,
-    actions: @Composable() (RowScope.() -> Unit),
-    scrollBehavior: TopAppBarScrollBehavior? = null,
+    actions: @Composable (RowScope.() -> Unit),
     modifier: Modifier = Modifier,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
     ){
     CenterAlignedTopAppBar(
         title = {

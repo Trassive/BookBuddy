@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,7 +29,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -133,7 +130,7 @@ fun CustomBottomSheet(sheetState: SheetState = rememberModalBottomSheetState(ski
             }
             CoilImage(
                 id = book.id,
-                imageUrl = book.cover,
+                imageUrl = book.coverImage,
                 onError = {},
                 diskCachePolicy = CachePolicy.ENABLED,
                 modifier = Modifier
@@ -263,7 +260,7 @@ fun BottomSheetPreview(){
             title ="Abcd Efgh",
             categories = listOf("Kids","Horror", "Adventure"),
             authors = listOf("hariab ahbcbj", "kbfkawb dbwwd"),
-            cover = "",
+            coverImage = "",
             isDownloaded = false,
             downloadLink = "",
                 isSaved = false,

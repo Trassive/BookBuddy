@@ -193,7 +193,7 @@ class BookDataRepository(
                 title = book.title,
                 authors = book.authors.joinToString(),
                 categories = book.categories.joinToString(),
-                coverImage = book.cover,
+                coverImage = book.coverImage,
                 description = book.description
                 ) ,
                 BookResource(
@@ -217,7 +217,7 @@ class BookDataRepository(
                 title = this.book.title,
                 authors = this.book.authors.split(","),
                 categories = this.book.categories.split(","),
-                cover = this.book.coverImage,
+                coverImage = this.book.coverImage,
                 isDownloaded = this.resource.downloadPath!=null,
                 isSaved = true,
                 description = this.book.description,

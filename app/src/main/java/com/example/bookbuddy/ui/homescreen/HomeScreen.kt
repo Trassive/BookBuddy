@@ -26,6 +26,8 @@ fun HomeScreen(viewModel: HomeScreenViewModel){
     val homeScreenUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember{ SnackbarHostState()}
 
+
+
     Scaffold(
         topBar = {
                 HomeScreenTopBar(
@@ -48,33 +50,44 @@ fun HomeScreen(viewModel: HomeScreenViewModel){
                 LottieAnimationComposable(R.raw.loading,modifier = Modifier.fillMaxSize())
             }
             is HomeUiState.HomeView ->{
-                HomeViewContent(state, Modifier.padding(innerPadding))
+                HomeViewContent(state, viewModel::updateBooks,Modifier.padding(innerPadding))
                 errorScreen = false
             }
             is HomeUiState.SearchView ->{
                 SearchView(state, Modifier.padding(innerPadding))
             }
             is HomeUiState.Error ->{
-
+                
                 if(state.error.isNotEmpty()){
-                    val message = stringResource(state.error.first())
-                    LaunchedEffect(key1 = message) {
-                        val action = snackbarHostState.showSnackbar(
-                            message = message,
-                            actionLabel = "Retry",
-                            withDismissAction = true,
-                            duration = SnackbarDuration.Short
-                        )
-                        when(action){
-                            SnackbarResult.Dismissed -> (viewModel::messageDismissed)()
-                            SnackbarResult.ActionPerformed -> (viewModel::retry)()
-                        }
-                    }
+                    HomeScreenSnackBar(state, snackbarHostState, viewModel)
                 }
             }
         }
     }
 }
+
+@Composable
+private fun HomeScreenSnackBar(
+    state: HomeUiState.Error,
+    snackbarHostState: SnackbarHostState,
+    viewModel: HomeScreenViewModel
+) {
+    val message = stringResource(state.error.first())
+    LaunchedEffect(key1 = message) {
+        val action = snackbarHostState.showSnackbar(
+            message = message,
+            actionLabel = "Retry",
+            withDismissAction = true,
+            duration = SnackbarDuration.Short
+        )
+        when (action) {
+            SnackbarResult.Dismissed -> (viewModel::messageDismissed)()
+            SnackbarResult.ActionPerformed -> (viewModel::retry)()
+        }
+    }
+}
+
+
 
 
 

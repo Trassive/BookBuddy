@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookbuddy.R
+import com.example.bookbuddy.data.exception.InvalidRequestException
 import com.example.bookbuddy.data.repository.interfaces.BookCatalogueRepository
 import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.ui.util.isOneOf
@@ -113,37 +114,38 @@ class HomeScreenViewModel(private val bookCatalogueRepository: BookCatalogueRepo
             HomeUiState.Error(error = (it as HomeUiState.Error).error.drop(1))
         }
     }
-    fun addMessage(@StringRes id: Int){
-        _uiState.update {
-            HomeUiState.Error(error = (it as HomeUiState.Error).error + id)
-        }
-    }
+
     fun updateBooks(){
         viewModelScope.launch {
-            _uiState.update {currentState ->
-                if(currentState is HomeUiState.HomeView){
-                    currentState.copy(
-                        bookList = currentState.bookList + bookCatalogueRepository.updateCatalogue().first()
-                    )
-                } else {
-                    HomeUiState.Error(listOf())
-                }
+            _uiState.update {currentState->
+                (currentState as? HomeUiState.HomeView)?.copy(isLoading = true)?: currentState
+            }
+        }
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                (currentState as? HomeUiState.HomeView)?.copy(
+                    bookList = currentState.bookList + bookCatalogueRepository.updateCatalogue()
+                        .first(),
+                    isLoading = false
+                )?:currentState
             }
         }
     }
 
 }
+
+
 sealed interface HomeUiState{
     data object IsLoading: HomeUiState
     data class HomeView(
         val carouselBooks: List<Book> = listOf(),
         val bookList: List<Book> = listOf(),
-        val isLoading: Boolean = true
+        val isLoading: Boolean = false
     ): HomeUiState
     data class SearchView(
         val searchText: String = "",
         val bookList: List<Book> = listOf(),
-        val isLoading: Boolean = false,
+        val isLoading: Boolean = true,
         val isSearching: Boolean = false
     ): HomeUiState
     data class Error(val error: List<Int>): HomeUiState

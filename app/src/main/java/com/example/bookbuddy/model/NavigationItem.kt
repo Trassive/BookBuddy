@@ -1,3 +1,8 @@
 package com.example.bookbuddy.model
 
-data class NavigationItem()
+import com.example.bookbuddy.navigation.RouteScreen
+
+data class NavigationItem(
+    val screen: RouteScreen,
+    val icon: Int
+)

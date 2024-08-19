@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import coil.request.CachePolicy
 import com.example.bookbuddy.R
+import com.example.bookbuddy.data.fakeData
 import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.ui.theme.AppShapes.topRoundedLarge
 import com.example.compose.BookBuddyTheme
@@ -196,7 +197,7 @@ private fun BookContent(
             modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.small_padding))
         )
         Text(
-            text = book.description !!,
+            text = book.description ,
             style = MaterialTheme.typography.bodyLarge,
             maxLines = 4,
             overflow = TextOverflow.Ellipsis,
@@ -248,26 +249,14 @@ fun BottomButtons(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview()
+@Preview
 @Composable
 fun BottomSheetPreview(){
     BookBuddyTheme {
         CustomBottomSheet(
             onExpand = {},
             onDismiss = {},
-            book = Book(
-            id = 4,
-            title ="Abcd Efgh",
-            categories = listOf("Kids","Horror", "Adventure"),
-            authors = listOf("hariab ahbcbj", "kbfkawb dbwwd"),
-            coverImage = "",
-            isDownloaded = false,
-            downloadLink = "",
-                isSaved = false,
-            description ="In general: Density is essentially a measurement of how tightly matter is packed together."+
-"            Same here, density means how many no. of pixels are present in a particular area on your screen."+
-"                The more the no. of pixels present in an area more will be the density and screen quality."+
-"                The screen with high resolution has comparatively smaller pixel sizes so that there can be more densitymore pixels tightly packed together.",
-        ))
+            book = fakeData.books[0]
+        )
     }
 }

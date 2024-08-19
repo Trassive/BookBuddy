@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookbuddy.data.repository.interfaces.OfflineBookRepository
 import com.example.bookbuddy.model.LibraryBook
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,8 +13,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class LibraryScreenViewModel(private val offlineBookRepository: OfflineBookRepository): ViewModel() {
+@HiltViewModel
+class LibraryScreenViewModel @Inject constructor(private val offlineBookRepository: OfflineBookRepository): ViewModel() {
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
 

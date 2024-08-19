@@ -1,13 +1,12 @@
 package com.example.bookbuddy.ui.homescreen
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookbuddy.R
-import com.example.bookbuddy.data.exception.InvalidRequestException
 import com.example.bookbuddy.data.repository.interfaces.BookCatalogueRepository
 import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.ui.util.isOneOf
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,9 +15,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okio.IOException
+import javax.inject.Inject
 import kotlin.math.min
 
-class HomeScreenViewModel(private val bookCatalogueRepository: BookCatalogueRepository): ViewModel() {
+@HiltViewModel
+class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepository: BookCatalogueRepository): ViewModel() {
     private val _uiState:MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState.IsLoading)
     val uiState = _uiState.asStateFlow()
 

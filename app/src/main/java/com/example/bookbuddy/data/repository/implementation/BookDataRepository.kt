@@ -34,14 +34,14 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import javax.inject.Inject
 
-class BookDataRepository(
+class BookDataRepository @Inject constructor(
     private val bookLocalDataSource: BookLocalDataSource,
     private val bookRemoteDataSource: BookRemoteDataSource,
     private val fileHandler: FileHandler,
-    private val dispatcherIO: CoroutineDispatcher = Dispatchers.IO,
-    private val dispatcherMain: CoroutineDispatcher = Dispatchers.Default
-    ): BookCatalogueRepository, BookDetailsRepository, OfflineBookRepository, ReadiumRepository {
+    private val dispatcherIO: CoroutineDispatcher = Dispatchers.IO
+): BookCatalogueRepository, BookDetailsRepository, OfflineBookRepository, ReadiumRepository {
     private var nextPageLink: String? = null
     private var count: Int = 0
     override suspend fun getCatalogue(query: String): List<Book> = withContext(dispatcherIO){
@@ -76,7 +76,7 @@ class BookDataRepository(
     }
 
     override suspend fun getBookDetails(id: Int): Book = coroutineScope {
-        val bookLocalDeferred = async(dispatcherMain) {
+        val bookLocalDeferred = async(dispatcherIO) {
             bookLocalDataSource.getBook(id)
         }
 
@@ -119,7 +119,7 @@ class BookDataRepository(
                         is InternalDownloadState.Downloading -> DownloadState.Downloading(state.progress)
                         is InternalDownloadState.Failed -> DownloadState.Failed(state.error)
                         is InternalDownloadState.Finished -> {
-                            withContext(dispatcherMain){
+                            withContext(dispatcherIO){
                                 val (book, resource) = destructBook(book, state.filePath)
                                 bookLocalDataSource.saveBook(book = book, resource = resource)
                             }

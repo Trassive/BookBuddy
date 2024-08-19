@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,7 +49,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HomeViewContent(homeUiState: HomeUiState.HomeView, loadMore:()->Unit, modifier: Modifier = Modifier) {
-    val spacer= with(LocalDensity.current){50.dp.toPx()*this.density.toInt()}
     val height = min(400.dp, LocalConfiguration.current.screenHeightDp.dp * 0.6f)
 
 
@@ -133,7 +131,7 @@ fun HomeViewContent(homeUiState: HomeUiState.HomeView, loadMore:()->Unit, modifi
 
                 if (currentScrollOffset > 0 && currentIndex == 0 && !isScrollingUp) {
                     coroutineScope.launch { lazyListState.animateScrollToItem(1) }
-                } else if (currentIndex == 1 && isScrollingUp && currentScrollOffset-previousScrollOffset> spacer) {
+                } else if (currentIndex == 1 && isScrollingUp ) {
                     coroutineScope.launch { lazyListState.animateScrollToItem(0) }
                 }
 

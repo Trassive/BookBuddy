@@ -1,6 +1,7 @@
 package com.example.bookbuddy.data
 
 import com.example.bookbuddy.model.Book
+import com.example.bookbuddy.model.LibraryBook
 
 
 val string: ()->String = {
@@ -112,6 +113,80 @@ object fakeData {
                 isSaved = false
             )
         )
+    val libraryBooks = listOf(
+        LibraryBook(
+            id = 1,
+            title = "The Lord of the Rings",
+            categories = listOf("Fantasy", "Adventure","Fantasy","Adventure","Adventure"),
+            authors = listOf("J.R.R. Tolkien","J.R.R. Tolkien"),
+            coverImage = "https://example.com/lotr.jpg",
+            isDownloaded = false,
+        ),
+        LibraryBook(
+            id = 2,
+            title = "Pride and Prejudice",
+            categories = listOf("Romance", "Classic"),
+            authors = listOf("Jane Austen"),
+            coverImage = "https://example.com/pride.jpg",
+            isDownloaded = true,
+        ),
+        LibraryBook(
+            id = 3,
+            title = "The Hitchhiker's Guide to the Galaxy",
+            categories = listOf("Science Fiction", "Comedy"),
+            authors = listOf("Douglas Adams"),
+            coverImage = "https://example.com/hitchhiker.jpg",
+            isDownloaded = false,
+        ),
+        LibraryBook(
+            id = 4,
+            title = "To Kill a Mockingbird",
+            categories = listOf("Classic", "Historical Fiction"),
+            authors = listOf("Harper Lee"),
+            coverImage = "https://example.com/mockingbird.jpg",
+            isDownloaded = false,
+        ),
+        LibraryBook(
+            id = 5,
+            title = "1984",
+            categories = listOf("Dystopian", "Science Fiction"),
+            authors = listOf("George Orwell"),
+            coverImage = "https://example.com/1984.jpg",
+            isDownloaded = true,
+        ),
+        LibraryBook(
+            id = 6,
+            title = "The Great Gatsby",
+            categories = listOf("Classic", "Tragedy"),
+            authors = listOf("F. Scott Fitzgerald"),
+            coverImage = "https://example.com/gatsby.jpg",
+            isDownloaded = false,
+        ),
+        LibraryBook(
+            id = 7,
+            title = "One Hundred Years of Solitude",
+            categories = listOf("Magical Realism", "Literary Fiction"),
+            authors = listOf("Gabriel García Márquez"),
+            coverImage = "https://example.com/solitude.jpg",
+            isDownloaded = true,
+        ),
+        LibraryBook(
+            id = 8,
+            title = "And Then There Were None",
+            categories = listOf("Mystery", "Thriller"),
+            authors = listOf("Agatha Christie"),
+            coverImage = "https://example.com/none.jpg",
+            isDownloaded = false,
+        ),
+        LibraryBook(
+            id = 9,
+            title = "The Little Prince",
+            categories = listOf("Children's Literature", "Fantasy"),
+            authors = listOf("Antoine de Saint-Exupéry"),
+            coverImage = "https://example.com/prince.jpg",
+            isDownloaded = false,
+        )
+    )
 
 }
 

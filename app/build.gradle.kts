@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     kotlin("plugin.serialization") version "2.0.0"
     id("com.google.devtools.ksp") version "1.9.0-1.0.13"
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -57,6 +59,7 @@ dependencies {
     implementation( libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.fragment.compose)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.navigation.compose)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -70,6 +73,7 @@ dependencies {
     implementation (libs.retrofit)
     runtimeOnly(libs.converter.kotlinx.serialization)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.converter.kotlinx.serialization)
     //Room
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.runtime)
@@ -84,6 +88,12 @@ dependencies {
     implementation(libs.coil.compose)
     //lottie-compose
     implementation( libs.lottie.compose)
+    //exyte bottom bar
+    implementation(libs.animated.navigation.bar)
+
+    implementation(libs.hilt.android)
+    kapt (libs.hilt.compiler)
+
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -92,4 +102,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+kapt {
+    correctErrorTypes = true
 }

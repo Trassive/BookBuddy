@@ -6,8 +6,9 @@ import com.example.bookbuddy.data.local.entities.SavedLocator
 import com.example.bookbuddy.data.local.entities.SavedBook
 import com.example.bookbuddy.model.BookWithResources
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class BookLocalDataSource(private val booksDao: BooksDao) {
+class BookLocalDataSource @Inject constructor(private val booksDao: BooksDao) {
     suspend fun saveBook(book: SavedBook, resource: BookResource){
         booksDao.insertBook(savedBook = book,resource = resource)
     }

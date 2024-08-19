@@ -6,8 +6,9 @@ import com.example.bookbuddy.network.BooksApi
 import com.example.bookbuddy.network.RemoteBookList
 import okhttp3.ResponseBody
 import retrofit2.Response
+import javax.inject.Inject
 
-class BookRemoteDataSource(
+class BookRemoteDataSource @Inject constructor(
     private val booksApi: BooksApi,
     private val booksDetailsApi: BookDetailsApi
 ) {

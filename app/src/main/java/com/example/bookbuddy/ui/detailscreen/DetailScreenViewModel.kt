@@ -7,6 +7,7 @@ import com.example.bookbuddy.R
 import com.example.bookbuddy.data.repository.interfaces.BookDetailsRepository
 import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.model.DownloadState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +21,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class DetailScreenViewModel(
+@HiltViewModel
+class DetailScreenViewModel @Inject constructor(
     saveStateHandle: SavedStateHandle,
     private val detailsRepository: BookDetailsRepository
 ): ViewModel() {

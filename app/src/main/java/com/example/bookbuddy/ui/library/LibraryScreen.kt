@@ -1,4 +1,3 @@
-@file:OptIn(ExperimentalFoundationApi::class)
 
 package com.example.bookbuddy.ui.library
 
@@ -9,7 +8,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +22,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRow
@@ -40,8 +38,11 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.request.CachePolicy
 import com.example.bookbuddy.R
+import com.example.bookbuddy.data.fakeData
 import com.example.bookbuddy.model.LibraryBook
+import com.example.bookbuddy.ui.util.BookList
 import com.example.compose.BookBuddyTheme
 import kotlinx.coroutines.launch
 
@@ -57,7 +58,7 @@ fun CustomTabs(savedbooks: List<LibraryBook>, downloadedLibraryBooks: List<Libra
 
     val list = listOf("Saved", "Download")
 
-    Column(){
+    Column(Modifier.background(Color(0xF0FFFFF0))){
 
         TabRow(
             selectedTabIndex = pagerState.currentPage,
@@ -69,7 +70,7 @@ fun CustomTabs(savedbooks: List<LibraryBook>, downloadedLibraryBooks: List<Libra
                 .clip(RoundedCornerShape(50)),
             indicator = {tabPositions ->
                 CustomTabIndicator(tabPositions = tabPositions, pagerState = pagerState)
-            }
+            },
         ) {
             list.forEachIndexed { index, text ->
                 val isSelected = pagerState.currentPage == index
@@ -107,13 +108,13 @@ fun CustomTabs(savedbooks: List<LibraryBook>, downloadedLibraryBooks: List<Libra
         }
         HorizontalPager(state = pagerState) {item->
             val books = if(item == 0) savedbooks else downloadedLibraryBooks
-//            BookList(
-//                books = books,
-//                onClick = {},
-//                onLongPress = {},
-//                modifier = Modifier.fillMaxSize(),
-//                diskCachePolicy = CachePolicy.ENABLED
-//            )
+            BookList(
+                books = books,
+                onClick = {},
+                onLongPress = {},
+                modifier = Modifier.fillMaxSize(),
+                diskCachePolicy = CachePolicy.ENABLED
+            )
         }
     }
 }
@@ -166,8 +167,6 @@ fun CustomTabIndicator(tabPositions: List<TabPosition>,pagerState: PagerState){
 @Composable
 fun CustomTabPreview(){
     BookBuddyTheme {
-        Surface{
-//            CustomTabs(fakeData.books.,fakeData.books)
-        }
+        CustomTabs(fakeData.libraryBooks,fakeData.libraryBooks)
     }
 }

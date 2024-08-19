@@ -6,7 +6,9 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.util.DebugLogger
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class BooksBuddyApplication: Application(), ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)

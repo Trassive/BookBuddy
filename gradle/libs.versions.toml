@@ -1,9 +1,11 @@
 [versions]
-agp = "8.4.0"
+agp = "8.4.2"
+animatedNavigationBar = "1.0.0"
 coilCompose = "2.7.0"
 converterKotlinxSerialization = "2.11.0"
 datastorePreferences = "1.1.1"
 desugar_jdk_libs = "2.0.4"
+hiltAndroid = "2.52"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -16,6 +18,7 @@ activityCompose = "1.9.0"
 composeBom = "2024.06.00"
 
 lottieCompose = "6.5.0"
+navigationCompose = "2.8.0-beta02"
 readium = "3.0.0-beta.2"
 retrofit = "2.11.0"
 roomKtx = "2.6.1"
@@ -28,12 +31,16 @@ appcompat = "1.7.0"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomKtx" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomKtx" }
+animated-navigation-bar = { module = "com.exyte:animated-navigation-bar", version.ref = "animatedNavigationBar" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-kotlinx-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "converterKotlinxSerialization" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

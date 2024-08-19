@@ -1,7 +1,9 @@
 package com.example.bookbuddy.ui.util
 
 import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.FloatExponentialDecaySpec
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -17,7 +19,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,7 +26,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
@@ -125,18 +125,19 @@ fun CarouselCard(
     val requiredDrag = with(LocalDensity.current){20.dp.toPx()}
 
     val state = remember {
-        AnchoredDraggableState(
-            anchors = DraggableAnchors{
+        AnchoredDraggableState<DragAnchors>(
+            initialValue = DragAnchors.Start,
+            anchors =DraggableAnchors{
                 DragAnchors.Start to 0f
                 DragAnchors.End to requiredDrag
             },
-            initialValue = DragAnchors.Start,
             positionalThreshold = {totalDistance: Float -> totalDistance*0.8f },
             velocityThreshold = { requiredDrag*2f},
-            animationSpec = spring(
-                stiffness = Spring.StiffnessHigh,
-                dampingRatio = Spring.DampingRatioLowBouncy
-            ),
+            snapAnimationSpec = spring(
+                stiffness = Spring.StiffnessLow,
+                dampingRatio = Spring.DampingRatioMediumBouncy
+           ),
+            decayAnimationSpec = FloatExponentialDecaySpec(0.1f).generateDecayAnimationSpec()
         )
     }
     LaunchedEffect(key1 = state.currentValue) {

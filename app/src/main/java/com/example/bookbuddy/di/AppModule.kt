@@ -3,10 +3,12 @@ package com.example.bookbuddy.di
 import android.content.Context
 import com.example.bookbuddy.data.local.dao.BooksDao
 import com.example.bookbuddy.data.local.database.AppDatabase
+import com.example.bookbuddy.data.readium.PublicationProvider
 import com.example.bookbuddy.data.repository.implementation.BookDataRepository
 import com.example.bookbuddy.data.repository.interfaces.BookCatalogueRepository
 import com.example.bookbuddy.data.repository.interfaces.BookDetailsRepository
 import com.example.bookbuddy.data.repository.interfaces.OfflineBookRepository
+import com.example.bookbuddy.data.repository.interfaces.ReadiumRepository
 import com.example.bookbuddy.data.util.FileHandler
 import com.example.bookbuddy.network.BookDetailsApi
 import com.example.bookbuddy.network.BooksApi
@@ -21,11 +23,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
-import javax.inject.Qualifier
 import javax.inject.Singleton
-
-
-
 
 
 @Module
@@ -53,7 +51,6 @@ object AppModule {
     @Provides
     fun providesDao(@ApplicationContext context: Context): BooksDao = AppDatabase.getDatabase(context).booksDao()
 
-
     @Provides
     fun providesFileHandler(@ApplicationContext context: Context): FileHandler = FileHandler(context)
 
@@ -69,7 +66,11 @@ object AppModule {
     @Provides
     fun providesOfflineBookRepository(bookRepository: BookDataRepository): OfflineBookRepository = bookRepository
 
+    @Provides
+    fun providesReadiumRepository(bookRepository: BookDataRepository): ReadiumRepository = bookRepository
 
+    @Provides
+    fun providesReadium(@ApplicationContext context: Context): PublicationProvider = PublicationProvider(context)
 }
 private fun createRetrofit(baseUrl: String): Retrofit{
     return Retrofit.Builder()

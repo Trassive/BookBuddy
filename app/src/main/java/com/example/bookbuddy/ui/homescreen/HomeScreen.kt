@@ -22,7 +22,7 @@ import com.example.bookbuddy.ui.util.LottieAnimationComposable
 
 
 @Composable
-fun HomeScreen(viewModel: HomeScreenViewModel){
+fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
     val homeScreenUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember{ SnackbarHostState()}
 

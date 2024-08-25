@@ -43,11 +43,22 @@ import org.readium.r2.shared.publication.Link
 import kotlin.text.Typography.bullet
 
 @Composable
-fun ContentComposable(tableOfContent: List<Link>, goTo: (Href)-> Unit){
-    Scaffold(){innerPadding ->
+fun TableOfContentScreen(tableOfContent: List<Link>, goTo: (Href)-> Unit){
+    Scaffold(
+        topBar = {
+
+        }
+    ) {innerPadding->
+        Content(tableOfContent, goTo)
+    }
+}
+
+
+@Composable
+fun Content(tableOfContent: List<Link>, goTo: (Href)-> Unit){
         LazyColumn(modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding),
+            .padding(dimensionResource(id =R.dimen.large_padding)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.medium_padding))
         ) {
 
@@ -57,6 +68,7 @@ fun ContentComposable(tableOfContent: List<Link>, goTo: (Href)-> Unit){
                 OutlinedCard(
                     onClick = { sectionLambda() }
                 ) {
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -68,7 +80,8 @@ fun ContentComposable(tableOfContent: List<Link>, goTo: (Href)-> Unit){
                             text = "$index   ${link.title!!}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding((dimensionResource(id = R.dimen.medium_padding)))
+                            modifier = Modifier
+                                .padding((dimensionResource(id = R.dimen.medium_padding)))
                                 .width(50.dp)
                                 .weight(1f)
                         )
@@ -100,10 +113,13 @@ fun ContentComposable(tableOfContent: List<Link>, goTo: (Href)-> Unit){
                                 animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessHigh)
                             )
                         ) {
-                            Column(Modifier.padding(
-                                start = dimensionResource(id = R.dimen.large_padding),
-                                end = dimensionResource(id = R.dimen.medium_padding))
-                                .wrapContentSize(),
+                            Column(
+                                Modifier
+                                    .padding(
+                                        start = dimensionResource(id = R.dimen.large_padding),
+                                        end = dimensionResource(id = R.dimen.medium_padding)
+                                    )
+                                    .wrapContentSize(),
                             ){
                                 repeat(link.children.size) { index ->
                                     Row(
@@ -121,7 +137,8 @@ fun ContentComposable(tableOfContent: List<Link>, goTo: (Href)-> Unit){
                                                 }
                                             },
                                             style = MaterialTheme.typography.labelLarge,
-                                            modifier = Modifier.width(50.dp)
+                                            modifier = Modifier
+                                                .width(50.dp)
                                                 .weight(1f)
                                         )
                                         IconButton(onClick = { goTo(link.children[index].href) }) {
@@ -140,5 +157,5 @@ fun ContentComposable(tableOfContent: List<Link>, goTo: (Href)-> Unit){
                 }
             }
         }
-    }
+
 }

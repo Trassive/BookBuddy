@@ -17,9 +17,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.get
 import com.example.bookbuddy.navigation.AppNavGraph
-import com.example.bookbuddy.navigation.LeafScreen
 import com.example.bookbuddy.navigation.RouteScreen
 import com.example.bookbuddy.ui.util.CustomBottomBar
 

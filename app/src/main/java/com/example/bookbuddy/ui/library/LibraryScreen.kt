@@ -47,7 +47,7 @@ import com.example.compose.BookBuddyTheme
 import kotlinx.coroutines.launch
 
 @Composable
-fun LibraryScreen(viewModel: LibraryScreenViewModel){
+fun LibraryScreen(viewModel: LibraryScreenViewModel, onClick: (Int) -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     CustomTabs(savedbooks = state.savedTabBooks , downloadedLibraryBooks = state.downloadedTabBooks)
 }

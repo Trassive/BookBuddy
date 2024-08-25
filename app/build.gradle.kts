@@ -5,6 +5,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.0-1.0.13"
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -92,6 +93,7 @@ dependencies {
     implementation(libs.animated.navigation.bar)
 
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
     kapt (libs.hilt.compiler)
 
     implementation(libs.androidx.material3)

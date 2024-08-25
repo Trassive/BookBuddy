@@ -29,9 +29,12 @@ fun NavGraphBuilder.addHomeRoute(navController: NavHostController) {
     navigation<RouteScreen.Home>(startDestination = LeafScreen.Home){
         composable<LeafScreen.Home> {
             val viewModel = hiltViewModel<HomeScreenViewModel>()
-            HomeScreen(viewModel = viewModel, onClick = {id->
+            HomeScreen(
+                viewModel = viewModel,
+                onClick = {id->
                 navController.navigate(LeafScreen.BookDetail(id))
-            })
+                }
+            )
         }
         commonScreen(navController)
     }

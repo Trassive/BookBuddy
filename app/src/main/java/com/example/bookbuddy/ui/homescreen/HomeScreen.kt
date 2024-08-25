@@ -26,13 +26,11 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
     val homeScreenUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember{ SnackbarHostState()}
 
-
-
     Scaffold(
         topBar = {
                 HomeScreenTopBar(
                     isSearching = homeScreenUiState !is HomeUiState.HomeView,
-                    searchTextState = (homeScreenUiState as? HomeUiState.SearchView)?.searchText,
+                    searchTextState = (homeScreenUiState as? HomeUiState.SearchView)?.searchText?:"",
                     onStateToggle = viewModel::toggleSearchState,
                     onValueChange = viewModel::onSearchQueryChange,
                     onSearchClicked = viewModel::onSearchClick

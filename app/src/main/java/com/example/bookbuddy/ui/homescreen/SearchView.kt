@@ -15,11 +15,14 @@ import com.example.bookbuddy.ui.util.BookList
 import com.example.compose.BookBuddyTheme
 
 @Composable
-fun SearchView(homeUiState: HomeUiState.SearchView, modifier: Modifier = Modifier){
+fun SearchView(
+    homeUiState: HomeUiState.SearchView,
+    onClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+){
     BookList(
         books = homeUiState.bookList,
-        onClick = {},
-        onLongPress = {},
+        onClick = onClick,
         diskCachePolicy = CachePolicy.DISABLED,
         memoryCachePolicy = CachePolicy.ENABLED,
         contentPadding = PaddingValues(dimensionResource(id = R.dimen.large_padding)),
@@ -33,7 +36,8 @@ fun SearchView(homeUiState: HomeUiState.SearchView, modifier: Modifier = Modifie
 fun SearchViewPreview(){
     BookBuddyTheme {
         SearchView(
-            homeUiState = HomeUiState.SearchView(searchText = "", bookList = fakeData.books)
+            homeUiState = HomeUiState.SearchView(searchText = "", bookList = fakeData.books),
+            onClick = {},
         )
     }
 }

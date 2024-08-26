@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,9 +19,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,39 +38,102 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.request.CachePolicy
 import com.example.bookbuddy.R
 import com.example.bookbuddy.data.fakeData
+import com.example.bookbuddy.model.DownloadState
 import com.example.bookbuddy.ui.util.CoilImage
+import com.example.bookbuddy.ui.util.CustomTopBar
+import com.example.bookbuddy.ui.util.DownloadButton
 import com.example.bookbuddy.ui.util.LottieAnimationComposable
 import com.example.compose.BookBuddyTheme
 
+@ExperimentalMaterial3Api
 @Composable
-fun DetailScreen(detailScreenViewModel: DetailScreenViewModel){
+fun DetailScreen(detailScreenViewModel: DetailScreenViewModel, onArrow: () -> Unit, onClick: (Int)->Unit) {
     val detailScreenState by detailScreenViewModel.uiState.collectAsStateWithLifecycle()
-    val scrollState = rememberScrollState()
-    when(val state = detailScreenState){
-        is DetailScreenState.Loading -> {
-            LottieAnimationComposable(R.raw.empty,modifier = Modifier.fillMaxSize())
-        }
-        is DetailScreenState.Error ->{
-            LottieAnimationComposable(R.raw.empty,modifier = Modifier.fillMaxSize())
-        }
-        is DetailScreenState.DetailView ->{
-            DetailView(state)
+    val downloadState by detailScreenViewModel.downloadState.collectAsStateWithLifecycle()
+    Scaffold(
+        topBar = {
+            CustomTopBar(
+                topBarTitle = stringResource(R.string.detail),
+                actions = {
+                    (detailScreenState as? DetailScreenState.DetailView)?.book?.let{book->
+                        if(book.isSaved){
+                            IconButton(onClick = detailScreenViewModel::toggleBookState) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.round_bookmark_24),
+                                    contentDescription = stringResource(R.string.unsave)
+                                )
+                            }
+                        }else if(book.isDownloaded) {
+                            IconButton(onClick = detailScreenViewModel::toggleBookState) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.rounded_delete_24),
+                                    contentDescription = stringResource(R.string.delete)
+                                )
+                            }
+                        } else {
+                            IconButton(onClick = detailScreenViewModel::toggleBookState) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_bookmark_add_24),
+                                    contentDescription = stringResource(R.string.save)
+                                )
+                            }
+                        }
+                    }
+                },
+                onArrowClick = onArrow
+            )
+        },
+        
+    ){innerPadding->
+        when (val state = detailScreenState) {
+            is DetailScreenState.Loading -> {
+                LottieAnimationComposable(R.raw.empty, modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize())
+            }
+
+            is DetailScreenState.Error -> {
+                LottieAnimationComposable(R.raw.empty, modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize())
+            }
+
+            is DetailScreenState.DetailView -> {
+                DetailView(
+                    detailViewState = state,
+                    downloadState = downloadState,
+                    onClick = onClick,
+                    onDownloadClick = {
+                        detailScreenViewModel.downloadBook()
+                    },
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                )
+            }
         }
     }
 }
 
 @Composable
-fun DetailView(detailViewState: DetailScreenState.DetailView) {
-    BoxWithConstraints{
+fun DetailView(
+    detailViewState: DetailScreenState.DetailView,
+    downloadState: DownloadState,
+    onClick: (Int) -> Unit,
+    onDownloadClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BoxWithConstraints(modifier){
         Column {
             BoxWithConstraints(
                 Modifier
@@ -77,7 +141,8 @@ fun DetailView(detailViewState: DetailScreenState.DetailView) {
                     .background(
                         Brush.verticalGradient(
                             listOf(
-                                MaterialTheme.colorScheme.surfaceVariant,
+
+                                Color(0xD0E4B56C),
                                 Color(0xFFECF6E5),
                             )
                         )
@@ -140,16 +205,21 @@ fun DetailView(detailViewState: DetailScreenState.DetailView) {
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.large_padding))
                         )
-                        Text(text = detailViewState.book.description!!)
+                        Text(text = detailViewState.book.description)
                     }
                 }
             }
         }
-        Button({},modifier = Modifier
-            .align(Alignment.TopCenter)
-            .offset(y = (maxHeight * 0.6f) - 24.dp)){
-            Text(text = "Action")
-        }
+        DownloadButton(
+            downloadState = downloadState,
+            downloaded = detailViewState.book.isDownloaded,
+            afterDownloadClick = { onClick(detailViewState.book.id) },
+            onDownloadClick = onDownloadClick,
+            modifier = Modifier
+                .width(maxWidth * 0.68f)
+                .align(Alignment.TopCenter)
+                .offset(y = (maxHeight * 0.6f) - 24.dp)
+        )
     }
 }
 @OptIn(ExperimentalFoundationApi::class)
@@ -207,7 +277,7 @@ fun ExpandableAuthorList(listName: String, list: List<String>, modifier: Modifie
                 )
             }
 
-            AnimatedVisibility(visible = expandedState,) {
+            AnimatedVisibility(visible = expandedState) {
                 Text(
                     text = "Show less",
                     style = MaterialTheme.typography.labelSmall,
@@ -228,6 +298,11 @@ fun ExpandableAuthorList(listName: String, list: List<String>, modifier: Modifie
 @Composable
 fun DetailViewPreview(){
     BookBuddyTheme {
-        DetailView(detailViewState = DetailScreenState.DetailView(fakeData.books[0]))
+        DetailView(
+            detailViewState = DetailScreenState.DetailView(fakeData.books[0]) ,
+            downloadState = DownloadState.Idle,
+            onClick = {},
+            onDownloadClick = {}
+        )
     }
 }

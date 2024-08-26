@@ -30,15 +30,17 @@ class ContentViewModel @Inject constructor(
             )
             _uiState.update {
                 TableOfContentUiState.Loaded(
+                    0,
+                    "",
                     publicationProvider(url).tableOfContents
                 )
             }
         }
     }
-    fun Link.toString() = this.url().toString()
 }
 sealed interface TableOfContentUiState {
-    object IsLoading: TableOfContentUiState
-    data class Loaded(val tableOfContent: List<Link>): TableOfContentUiState
+    data object IsLoading: TableOfContentUiState
+    data class Loaded(val id: Int, val title: String, val tableOfContent: List<Link> ): TableOfContentUiState
     data object Error: TableOfContentUiState
 }
+fun Link.String() = this.url().toString()

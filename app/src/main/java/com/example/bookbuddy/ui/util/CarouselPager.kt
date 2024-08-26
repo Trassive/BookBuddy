@@ -62,7 +62,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CarouselPager(
     books: List<Book>,
@@ -125,7 +124,7 @@ fun CarouselCard(
     val requiredDrag = with(LocalDensity.current){20.dp.toPx()}
 
     val state = remember {
-        AnchoredDraggableState<DragAnchors>(
+        AnchoredDraggableState(
             initialValue = DragAnchors.Start,
             anchors =DraggableAnchors{
                 DragAnchors.Start to 0f
@@ -173,8 +172,8 @@ fun CarouselCard(
                     .graphicsLayer {
 
                         val scale = lerp(1f, 1.75f, pageOffset)
-                        scaleX *= scale*state.progress
-                        scaleY *= scale*state.progress
+                        scaleX *= scale* state.progress(state.settledValue, state.targetValue)
+                        scaleY *= scale* state.progress(state.settledValue, state.targetValue)
                     }
                     .background(Color.Cyan)
                 ,
@@ -247,7 +246,6 @@ private fun DragArea() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 fun PagerState.calculateCurrentOffsetForPage(page: Int): Float {
     return (currentPage - page) + currentPageOffsetFraction
 }

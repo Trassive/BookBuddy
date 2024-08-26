@@ -3,18 +3,17 @@ package com.example.bookbuddy.ui.detailscreen
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.example.bookbuddy.R
 import com.example.bookbuddy.data.repository.interfaces.BookDetailsRepository
 import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.model.DownloadState
+import com.example.bookbuddy.navigation.LeafScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,7 +23,11 @@ class DetailScreenViewModel @Inject constructor(
     saveStateHandle: SavedStateHandle,
     private val detailsRepository: BookDetailsRepository
 ): ViewModel() {
-    private val id: Int = checkNotNull(saveStateHandle["//TODO"])
+
+    private val _downloadState = MutableStateFlow<DownloadState>(DownloadState.Idle)
+    val downloadState = _downloadState.asStateFlow()
+
+    private val id: Int = saveStateHandle.toRoute<LeafScreen.BookDetail>().id
     private val _uiState: MutableStateFlow<DetailScreenState> = MutableStateFlow(DetailScreenState.Loading)
     val uiState: StateFlow<DetailScreenState> = _uiState.asStateFlow()
     init{
@@ -47,20 +50,17 @@ class DetailScreenViewModel @Inject constructor(
         }
     }
 
-    fun downloadBook(): StateFlow<DownloadState> = flow<DownloadState>{
-
-        detailsRepository.downloadBook((uiState.value as? DetailScreenState.DetailView)!!.book)
-    }.map{state ->
-        if(state is DownloadState.Failed){
-            getBook()
+    fun downloadBook(){
+        viewModelScope.launch {
+            detailsRepository.downloadBook((uiState.value as? DetailScreenState.DetailView)!!.book).collectLatest { state->
+                if(state is DownloadState.Finished || state is DownloadState.Failed){
+                    getBook()
+                }
+                _downloadState.update {
+                    state
+                }
+            }
         }
-        state
-    }.stateIn(
-        scope = viewModelScope,
-        initialValue = DownloadState.Idle,
-        started = SharingStarted.WhileSubscribed(5000)
-    ).also{
-        getBook()
     }
     fun toggleBookState(){
         viewModelScope.launch {

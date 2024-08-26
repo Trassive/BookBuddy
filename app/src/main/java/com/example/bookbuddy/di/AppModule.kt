@@ -70,7 +70,7 @@ object AppModule {
     fun providesReadiumRepository(bookRepository: BookDataRepository): ReadiumRepository = bookRepository
 
     @Provides
-    fun providesReadium(@ApplicationContext context: Context): PublicationProvider = PublicationProvider(context)
+    fun providesPublicationProvider(@ApplicationContext context: Context): PublicationProvider = PublicationProvider(context)
 }
 private fun createRetrofit(baseUrl: String): Retrofit{
     return Retrofit.Builder()

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.bookbuddy.ui.util
 
 import androidx.compose.foundation.Image
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -49,7 +52,6 @@ import com.example.bookbuddy.ui.theme.AppShapes.topRoundedLarge
 import com.example.compose.BookBuddyTheme
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomBottomSheet(sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), book: Book,onDismiss: ()->Unit,  onExpand: (Int)->Unit){
     val coroutineScope = rememberCoroutineScope()
@@ -248,15 +250,16 @@ fun BottomButtons(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun BottomSheetPreview(){
     BookBuddyTheme {
-        CustomBottomSheet(
-            onExpand = {},
-            onDismiss = {},
-            book = fakeData.books[0]
-        )
+        Surface(color = Color.Magenta){
+            CustomBottomSheet(
+                onExpand = {},
+                onDismiss = {},
+                book = fakeData.books[0]
+            )
+        }
     }
 }

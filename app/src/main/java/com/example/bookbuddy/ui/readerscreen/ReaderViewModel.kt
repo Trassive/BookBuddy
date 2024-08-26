@@ -29,7 +29,7 @@ class ReaderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val publicationProvider: PublicationProvider,
     private val readiumRepository: ReadiumRepository,
-    private val configurationsRepository: ConfigurationsRepository
+//    private val configurationsRepository: ConfigurationsRepository
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow<ReaderUiState>(ReaderUiState.IsLoading)

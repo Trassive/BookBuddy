@@ -3,19 +3,12 @@
 package com.example.bookbuddy.ui.util
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,9 +48,9 @@ private val EMPTY = {}
 @Composable
 fun CustomTopBar(
     topBarTitle: String,
-    onArrowClick: () -> Unit = EMPTY,
-    actions: @Composable (RowScope.() -> Unit),
     modifier: Modifier = Modifier,
+    onArrowClick: () -> Unit = EMPTY,
+    actions: @Composable (RowScope.() -> Unit) = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
     ){
     CenterAlignedTopAppBar(
@@ -122,7 +115,6 @@ fun CustomSearchBar(
         )
     }
 }
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun HomeScreenTopBar(
     isSearching: Boolean = false,
@@ -152,7 +144,7 @@ fun HomeScreenTopBar(
     ) {state->
         if(state ){
             CustomSearchBar(
-                searchTextState = searchTextState!!,
+                searchTextState = searchTextState,
                 onValueChange = onValueChange,
                 onCloseClick = onStateToggle,
                 onSearch = onSearchClicked

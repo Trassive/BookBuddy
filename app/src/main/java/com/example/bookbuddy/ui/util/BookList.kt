@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+
 package com.example.bookbuddy.ui.util
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -16,9 +18,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,18 +39,59 @@ import coil.request.CachePolicy
 import com.example.bookbuddy.R
 import com.example.bookbuddy.data.fakeData
 import com.example.bookbuddy.model.BaseBook
+import com.example.bookbuddy.model.Book
+import com.example.bookbuddy.model.LibraryBook
 import com.example.compose.BookBuddyTheme
 
 @Composable
 fun BookList(
-    books: List<BaseBook>,
+    books: List<Book>,
     onClick: (Int)-> Unit,
-    onLongPress:(Int)-> Unit,
     modifier: Modifier,
     diskCachePolicy: CachePolicy,
     memoryCachePolicy: CachePolicy = CachePolicy.ENABLED,
     contentPadding: PaddingValues = PaddingValues(dimensionResource(id = R.dimen.large_padding)),
+){
+    var bottomSheetBook by remember{ mutableStateOf<Book?>(null) }
+    LazyColumn(
+        contentPadding = contentPadding,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.medium_padding)),
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        items(items = books, key = { it.id }) { book ->
+            BookCard(
+                book = book,
+                onClick = { onClick(book.id) },
+                onLongPress = {
+                    bottomSheetBook = book
+                },
+                diskCachePolicy = diskCachePolicy,
+                memoryCachePolicy = memoryCachePolicy,
+                modifier = Modifier
+                    .height(150.dp)
+                    .fillMaxWidth()
+            )
+        }
+    }
+    bottomSheetBook?.let{book->
+        CustomBottomSheet(
+            book = book,
+            onDismiss = { bottomSheetBook = null},
+            onExpand = { onClick(book.id) }
+        )
+    }
+}
 
+@Composable
+fun LibraryBookList(
+    books: List<LibraryBook>,
+    onClick: (Int)-> Unit,
+    modifier: Modifier,
+    diskCachePolicy: CachePolicy,
+    memoryCachePolicy: CachePolicy = CachePolicy.ENABLED,
+    contentPadding: PaddingValues = PaddingValues(dimensionResource(id = R.dimen.large_padding)),
 ){
     LazyColumn(
         contentPadding = contentPadding,
@@ -55,8 +103,8 @@ fun BookList(
         items(items = books, key = { it.id }) { book ->
             BookCard(
                 book = book,
-                onClick = onClick,
-                onLongPress = onLongPress,
+                onClick = { onClick(book.id) },
+                onLongPress = {},
                 diskCachePolicy = diskCachePolicy,
                 memoryCachePolicy = memoryCachePolicy,
                 modifier = Modifier
@@ -65,14 +113,14 @@ fun BookList(
             )
         }
     }
+
 }
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookCard(
     book: BaseBook,
-    onClick: (Int) -> Unit,
-    onLongPress: (Int) -> Unit,
     diskCachePolicy: CachePolicy,
+    onClick: () -> Unit,
+    onLongPress: () -> Unit,
     modifier: Modifier = Modifier,
     memoryCachePolicy: CachePolicy = CachePolicy.ENABLED,
 ) {
@@ -80,8 +128,8 @@ fun BookCard(
         modifier = modifier
             .combinedClickable(
                 onClickLabel = stringResource(id = R.string.expand),
-                onClick = { onClick(book.id) },
-                onLongClick = { onLongPress(book.id) }
+                onClick = onClick,
+                onLongClick = onLongPress
             )
             .padding(dimensionResource(id = R.dimen.small_padding)),
         elevation = CardDefaults.cardElevation(
@@ -145,6 +193,7 @@ fun BookCard(
             }
         }
     }
+
 }
 @Preview(showBackground = true)
 @Composable
@@ -155,7 +204,6 @@ fun ListPreview(){
             modifier = Modifier,
             diskCachePolicy = CachePolicy.DISABLED,
             onClick = {},
-            onLongPress = {}
         )
     }
 }

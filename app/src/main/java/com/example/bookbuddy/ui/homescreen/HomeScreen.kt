@@ -28,13 +28,13 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
 
     Scaffold(
         topBar = {
-                HomeScreenTopBar(
-                    isSearching = homeScreenUiState !is HomeUiState.HomeView,
-                    searchTextState = (homeScreenUiState as? HomeUiState.SearchView)?.searchText?:"",
-                    onStateToggle = viewModel::toggleSearchState,
-                    onValueChange = viewModel::onSearchQueryChange,
-                    onSearchClicked = viewModel::onSearchClick
-                )
+            HomeScreenTopBar(
+                isSearching = homeScreenUiState !is HomeUiState.HomeView,
+                searchTextState = (homeScreenUiState as? HomeUiState.SearchView)?.searchText?:"",
+                onStateToggle = viewModel::toggleSearchState,
+                onValueChange = viewModel::onSearchQueryChange,
+                onSearchClicked = viewModel::onSearchClick
+            )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {innerPadding ->
@@ -48,14 +48,13 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
                 LottieAnimationComposable(R.raw.loading,modifier = Modifier.fillMaxSize())
             }
             is HomeUiState.HomeView ->{
-                HomeViewContent(state, viewModel::updateBooks,Modifier.padding(innerPadding))
+                HomeViewContent(state, loadMore = viewModel::updateBooks, onClick = onClick, modifier =  Modifier.padding(innerPadding))
                 errorScreen = false
             }
             is HomeUiState.SearchView ->{
-                SearchView(state, Modifier.padding(innerPadding))
+                SearchView(state, onClick = onClick, Modifier.padding(innerPadding))
             }
             is HomeUiState.Error ->{
-                
                 if(state.error.isNotEmpty()){
                     HomeScreenSnackBar(state, snackbarHostState, viewModel)
                 }

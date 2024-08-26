@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -149,13 +150,18 @@ class BookDataRepository @Inject constructor(
         }
     }
 
-    override suspend fun getBookUrl(id: Int): Url {
+    override suspend fun getBookUrl(id: Int): AbsoluteUrl {
         TODO("Not yet implemented")
     }
 
     override suspend fun updateProgress(locator: Locator) {
         TODO("Not yet implemented")
     }
+
+    override suspend fun getLoctor(id: Int): Locator? {
+        TODO("Not yet implemented")
+    }
+
     private suspend fun mergeMetaData(remoteBooks: List<RemoteBook>): List<Book> = coroutineScope{
         return@coroutineScope remoteBooks.map{ book: RemoteBook->
             val metaData = bookRemoteDataSource.getAdditionalMetadata(googleBooksQuery(title = book.title, author = book.authors[0].name ))

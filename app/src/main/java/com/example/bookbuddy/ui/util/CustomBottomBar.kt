@@ -1,6 +1,6 @@
 package com.example.bookbuddy.ui.util
 
-import android.util.Log
+ import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween

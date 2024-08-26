@@ -19,6 +19,9 @@ import javax.inject.Inject
 class LibraryScreenViewModel @Inject constructor(private val offlineBookRepository: OfflineBookRepository): ViewModel() {
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
+    init{
+        getBooks()
+    }
 
     private fun getBooks() {
         viewModelScope.launch{

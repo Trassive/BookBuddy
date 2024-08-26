@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.bookbuddy.ui.homescreen
 
 import androidx.compose.foundation.background
@@ -13,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -38,9 +41,11 @@ import androidx.compose.ui.zIndex
 import coil.request.CachePolicy
 import com.example.bookbuddy.R
 import com.example.bookbuddy.data.fakeData
+import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.ui.theme.AppShapes.bottomRoundedLarge
 import com.example.bookbuddy.ui.util.BookCard
 import com.example.bookbuddy.ui.util.CarouselPager
+import com.example.bookbuddy.ui.util.CustomBottomSheet
 import com.example.compose.BookBuddyTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -48,7 +53,10 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun HomeViewContent(homeUiState: HomeUiState.HomeView, loadMore:()->Unit, modifier: Modifier = Modifier) {
+fun HomeViewContent(homeUiState: HomeUiState.HomeView, onClick: (Int)-> Unit, loadMore:()->Unit, modifier: Modifier = Modifier) {
+    var bottomSheetBook by remember{ mutableStateOf<Book?>(null) }
+
+
     val height = min(400.dp, LocalConfiguration.current.screenHeightDp.dp * 0.6f)
 
 
@@ -93,8 +101,8 @@ fun HomeViewContent(homeUiState: HomeUiState.HomeView, loadMore:()->Unit, modifi
         items(items = homeUiState.bookList, key = { it.id }) { book ->
             BookCard(
                 book = book,
-                onClick = {},
-                onLongPress = {},
+                onClick = { onClick(book.id) },
+                onLongPress = { bottomSheetBook = book},
                 diskCachePolicy = CachePolicy.DISABLED,
                 memoryCachePolicy = CachePolicy.ENABLED,
                 modifier = Modifier
@@ -116,6 +124,13 @@ fun HomeViewContent(homeUiState: HomeUiState.HomeView, loadMore:()->Unit, modifi
                 }
             }
         }
+    }
+    bottomSheetBook?.let{book->
+        CustomBottomSheet(
+            book = book,
+            onDismiss = { bottomSheetBook = null},
+            onExpand = { onClick(book.id) }
+        )
     }
 
     LaunchedEffect(lazyListState) {
@@ -158,10 +173,9 @@ fun HomeViewPreview(){
                 homeUiState = HomeUiState.HomeView(
                     carouselBooks = fakeData.books,
                     bookList = state
-                )
-                ,{
-                    state = state+state
-                }
+                ),
+                onClick = {},
+                loadMore = { state = state+state}
             )
         }
     }

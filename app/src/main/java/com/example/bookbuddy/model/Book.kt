@@ -14,7 +14,7 @@ data class Book(
     val isDownloaded: Boolean,
     val isSaved: Boolean
 ): BaseBook
-fun RemoteBook.toBook(description: String, isDownloaded: Boolean = false, isSaved: Boolean = false): Book {
+fun RemoteBook.toBook(description: String, isDownloaded: Boolean = false): Book {
     return Book(
         id = this.id,
         title = this.title,

@@ -74,27 +74,23 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
     fun onSearchClick(){
         viewModelScope.launch{
             val query = (_uiState.value as? HomeUiState.SearchView)!!.searchText
-            if (query.isNotEmpty()) {
-                _uiState.update { currentState ->
-                    try {
-                        val query = ( currentState as?HomeUiState.SearchView)?.searchText
-                            ?: throw CancellationException("Invalid Request")
-
-                        val books = bookCatalogueRepository.getCatalogue(query)
-                        HomeUiState.HomeView(
-                            carouselBooks = books.subList(0,7),
-                            bookList = books.drop(7),
-                            isLoading = false
-                        )
-                    } catch (e: Exception) {
-                        val currError = if (e.isOneOf(IOException::class, CancellationException::class) ) {
-                            listOf(R.string.network_Error)
-                        } else {
-                            listOf(R.string.unknown_error)
-                        }
-                        val errors = ((currentState as? HomeUiState.Error)?.error?.plus(currError)) ?: currError
-                        HomeUiState.Error(error = errors)
+            if(query.isBlank()) return@launch
+            _uiState.update { currentState ->
+                try {
+                    val books = bookCatalogueRepository.getCatalogue(query)
+                    HomeUiState.HomeView(
+                        carouselBooks = books.subList(0,7),
+                        bookList = books.drop(7),
+                        isLoading = false
+                    )
+                } catch (e: Exception) {
+                    val currError = if (e.isOneOf(IOException::class, CancellationException::class) ) {
+                        listOf(R.string.network_Error)
+                    } else {
+                        listOf(R.string.unknown_error)
                     }
+                    val errors = ((currentState as? HomeUiState.Error)?.error?.plus(currError)) ?: currError
+                    HomeUiState.Error(error = errors)
                 }
             }
         }

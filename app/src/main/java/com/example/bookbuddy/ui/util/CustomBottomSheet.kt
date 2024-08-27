@@ -142,7 +142,6 @@ fun CustomBottomSheet(sheetState: SheetState = rememberModalBottomSheetState(ski
                         x = maxWidth / 2 - coverWidth / 2
                     )
                     .clip(MaterialTheme.shapes.large)
-                    .background(Color.Cyan)
                     .size(width = coverWidth, height = coverHeight)
             )
 

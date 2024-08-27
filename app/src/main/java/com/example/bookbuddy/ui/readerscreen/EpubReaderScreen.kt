@@ -3,6 +3,7 @@ package com.example.bookbuddy.ui.readerscreen
 import android.view.View
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -13,13 +14,21 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bookbuddy.R
+import com.example.bookbuddy.ui.util.CustomTopBar
 import com.example.bookbuddy.ui.util.LottieAnimationComposable
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderScreen(viewModel: ReaderViewModel){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    Scaffold {innerPadding ->
+    Scaffold(
+        topBar = {
+            CustomTopBar(
+                topBarTitle = ""
+            )
+        }
+    ) {innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
             when(uiState){
                 ReaderUiState.IsLoading -> {

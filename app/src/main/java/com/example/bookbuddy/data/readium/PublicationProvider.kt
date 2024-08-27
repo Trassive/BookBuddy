@@ -10,13 +10,15 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
+import java.io.File
 
 class PublicationProvider(private val context: Context){
-    suspend operator fun invoke(url: AbsoluteUrl): Publication{
+    suspend operator fun invoke(fileName: String): Publication{
         val httpClient = DefaultHttpClient()
         val assetRetriever = AssetRetriever(context.contentResolver, httpClient = httpClient)
 
-        val asset = assetRetriever.retrieve(url, formatHints = FormatHints(mediaType = MediaType.EPUB)).getOrElse{
+        val file = File(context.filesDir, fileName)
+        val asset = assetRetriever.retrieve(file, formatHints = FormatHints(mediaType = MediaType.EPUB)).getOrElse{
             throw IllegalArgumentException("Error retrieving asset")
         }
         val publicationParser = DefaultPublicationParser(context, httpClient, assetRetriever, null)

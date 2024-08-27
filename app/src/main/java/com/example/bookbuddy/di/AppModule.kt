@@ -32,7 +32,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideBooksApi(): BooksApi{
-        val retrofit = createRetrofit("https://gutendex.com/books/")
+        val retrofit = createRetrofit("https://gutendex.com/")
         val booksApi: BooksApi by lazy{
             retrofit.create(BooksApi::class.java)
         }
@@ -41,7 +41,7 @@ object AppModule {
     @Provides
     @Singleton
     fun providesBookDetailsApi(): BookDetailsApi{
-        val retrofit = createRetrofit("https://www.googleapis.com/books/v1/volumes")
+        val retrofit = createRetrofit("https://www.googleapis.com/books/v1/")
 
         val bookDetailsApi: BookDetailsApi by lazy{
             retrofit.create(BookDetailsApi::class.java)
@@ -72,9 +72,11 @@ object AppModule {
     @Provides
     fun providesPublicationProvider(@ApplicationContext context: Context): PublicationProvider = PublicationProvider(context)
 }
+
 private fun createRetrofit(baseUrl: String): Retrofit{
+    val json = Json { ignoreUnknownKeys = true }
     return Retrofit.Builder()
         .baseUrl(baseUrl)
-        .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
 }

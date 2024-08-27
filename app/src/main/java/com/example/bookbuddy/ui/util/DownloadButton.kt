@@ -145,7 +145,6 @@ fun ButtonPreview(){
                     downloadState = it
                 }
             }
-            Log.d("DownloadButton", "triggerDownload: $downloadState")
         }
     }
     BookBuddyTheme {

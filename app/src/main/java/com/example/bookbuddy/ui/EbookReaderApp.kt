@@ -1,5 +1,6 @@
 package com.example.bookbuddy.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,14 +17,14 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.bookbuddy.navigation.AppNavGraph
 import com.example.bookbuddy.navigation.RouteScreen
 import com.example.bookbuddy.ui.util.CustomBottomBar
 
 @Composable
-fun EbookReaderApp(){
-    val navController = rememberNavController()
+fun EbookReaderApp(navController: NavHostController = rememberNavController(), modifier: Modifier = Modifier){
     val currentScreen by navController.currentScreenAsState()
     Scaffold(
         bottomBar = {
@@ -35,9 +36,10 @@ fun EbookReaderApp(){
             )
         }
     ) {innerPadding->
-        Box(modifier = Modifier
+        Box(modifier = modifier
+            .padding((innerPadding))
             .fillMaxSize()
-            .padding(innerPadding)
+
         ){
             AppNavGraph(navController = navController)
         }
@@ -50,12 +52,16 @@ private fun NavController.currentScreenAsState(): State<RouteScreen?> {
     val selectedItem = remember { mutableStateOf<RouteScreen?>(null) }
     DisposableEffect(this) {
         val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
-            
+            destination.hierarchy.forEach {
+                Log.d("currentScreenAsState", "currentScreenAsState: ${it.route} parent ${it.parent?.route}")
+            }
             selectedItem.value = when{
+
                destination.hierarchy.any {it.hasRoute(RouteScreen.Home::class)}->{
                    RouteScreen.Home
                }
-               destination.hierarchy.any{it.hasRoute(RouteScreen.Library::class)} ->{
+               destination.hierarchy.any { it.hasRoute(RouteScreen.Library::class)} ->{
+
                    RouteScreen.Library
                }
                destination.hierarchy.any{it.hasRoute(RouteScreen.Settings::class)} ->{
@@ -63,6 +69,7 @@ private fun NavController.currentScreenAsState(): State<RouteScreen?> {
                }
                 else ->{ null}
            }
+            Log.d("currentScreenAsState", "currentScreenAsState: ${selectedItem.value}")
         }
         addOnDestinationChangedListener(listener)
 

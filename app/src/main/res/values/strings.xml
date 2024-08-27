@@ -28,6 +28,6 @@
     <string name="error_try_again">Error.Try Again</string>
     <string name="start_reading">Start Reading</string>
     <string name="download">Download</string>
-    <string name="progress">%1$d%%</string>
+    <string name="progress">%d%%</string>
     <string name="downloading">Downloading..</string>
 </resources>

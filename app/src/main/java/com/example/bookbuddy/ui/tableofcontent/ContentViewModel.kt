@@ -23,16 +23,15 @@ class ContentViewModel @Inject constructor(
 ): ViewModel() {
     private val _uiState = MutableStateFlow<TableOfContentUiState>(TableOfContentUiState.IsLoading)
     val uiState = _uiState.asStateFlow()
+    private val id: Int = savedStateHandle.toRoute<LeafScreen.TableOfContent>().id
     init{
         viewModelScope.launch {
-            val url = readerRepository.getBookUrl(
-                savedStateHandle.toRoute<LeafScreen.TableOfContent>().id
-            )
+            val publication = publicationProvider(readerRepository.getBookUrl(id))
             _uiState.update {
                 TableOfContentUiState.Loaded(
-                    0,
-                    "",
-                    publicationProvider(url).tableOfContents
+                    id,
+                    publication.metadata.title?:"No title found",
+                    publication.tableOfContents
                 )
             }
         }

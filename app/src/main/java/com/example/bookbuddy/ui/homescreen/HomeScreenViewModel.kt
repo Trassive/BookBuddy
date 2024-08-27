@@ -1,5 +1,6 @@
 package com.example.bookbuddy.ui.homescreen
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookbuddy.R
@@ -35,17 +36,20 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
             _uiState.update { state->
                 try {
                     val books = bookCatalogueRepository.getCatalogue()
+                    Log.d("HomeScreenViewModel", "getBooks: ${books.size}")
                     HomeUiState.HomeView(
                         carouselBooks = books.subList(0,7),
                         bookList = books.drop(7),
                         isLoading = false
                     )
+
                 } catch (e: Exception) {
                     val currError = if (e is IOException) {
                         listOf(R.string.network_Error)
                     } else {
                         listOf(R.string.error)
                     }
+                    Log.d("HomeScreenViewModel", "getBooks: ${e.message} ${e.cause} ${e.localizedMessage}")
                     val errors = ((state as? HomeUiState.Error)?.error?.plus(currError)) ?: currError
                     HomeUiState.Error(error = errors)
                 }
@@ -79,8 +83,8 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
                 try {
                     val books = bookCatalogueRepository.getCatalogue(query)
                     HomeUiState.HomeView(
-                        carouselBooks = books.subList(0,7),
-                        bookList = books.drop(7),
+                        carouselBooks = books.subList(0, min(7, books.size)),
+                        bookList = books.drop(min(7, books.size)),
                         isLoading = false
                     )
                 } catch (e: Exception) {

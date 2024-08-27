@@ -30,7 +30,8 @@ class FileHandler(private val context: Context) {
                     }
                 }
             }
-            emit(InternalDownloadState.Finished("file://${destinationFile.absolutePath}"))
+
+            emit(InternalDownloadState.Finished(destinationFile.name))
         } catch (e: Exception) {
             emit(InternalDownloadState.Failed(e))
         }finally {

@@ -31,7 +31,7 @@ class ReaderViewModel @Inject constructor(
     private val readiumRepository: ReadiumRepository,
 //    private val configurationsRepository: ConfigurationsRepository
 ): ViewModel() {
-
+    private val id: Int = savedStateHandle.toRoute<LeafScreen.Reader>().id
     private val _uiState = MutableStateFlow<ReaderUiState>(ReaderUiState.IsLoading)
     val uiState = _uiState.asStateFlow()
     private lateinit var factory: FragmentFactory
@@ -78,7 +78,7 @@ class ReaderViewModel @Inject constructor(
     }
     private fun updateProgress(locator: Locator){
         viewModelScope.launch {
-            readiumRepository.updateProgress(locator)
+            readiumRepository.updateProgress(id, locator)
             _uiState.update {
                 (it as ReaderUiState.Success).copy(readingProgression = locator.locations.totalProgression)
             }

@@ -1,5 +1,7 @@
 package com.example.bookbuddy.ui.homescreen
 
+import android.util.Log
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -29,13 +31,14 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
     Scaffold(
         topBar = {
             HomeScreenTopBar(
-                isSearching = homeScreenUiState !is HomeUiState.HomeView,
+                isSearching = homeScreenUiState is HomeUiState.SearchView,
                 searchTextState = (homeScreenUiState as? HomeUiState.SearchView)?.searchText?:"",
                 onStateToggle = viewModel::toggleSearchState,
                 onValueChange = viewModel::onSearchQueryChange,
                 onSearchClicked = viewModel::onSearchClick
             )
         },
+
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {innerPadding ->
 
@@ -45,10 +48,16 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
         }
         when(val state = homeScreenUiState){
             is HomeUiState.IsLoading -> {
+                Log.d("HomeScreen", "HomeUiState.IsLoading")
                 LottieAnimationComposable(R.raw.loading,modifier = Modifier.fillMaxSize())
             }
             is HomeUiState.HomeView ->{
-                HomeViewContent(state, loadMore = viewModel::updateBooks, onClick = onClick, modifier =  Modifier.padding(innerPadding))
+                HomeViewContent(
+                    homeUiState = state,
+                    loadMore = viewModel::updateBooks,
+                    onClick = onClick,
+                    modifier = Modifier.padding(top =innerPadding.calculateTopPadding()).fillMaxSize()
+                )
                 errorScreen = false
             }
             is HomeUiState.SearchView ->{
@@ -56,7 +65,12 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
             }
             is HomeUiState.Error ->{
                 if(state.error.isNotEmpty()){
-                    HomeScreenSnackBar(state, snackbarHostState, viewModel)
+                    HomeScreenSnackBar(
+                        state = state,
+                        snackbarHostState = snackbarHostState,
+                        onDismiss = viewModel::messageDismissed,
+                        onRetry = viewModel::retry
+                    )
                 }
             }
         }
@@ -67,7 +81,8 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
 private fun HomeScreenSnackBar(
     state: HomeUiState.Error,
     snackbarHostState: SnackbarHostState,
-    viewModel: HomeScreenViewModel
+    onDismiss: () -> Unit,
+    onRetry: () -> Unit
 ) {
     val message = stringResource(state.error.first())
     LaunchedEffect(key1 = message) {
@@ -78,8 +93,8 @@ private fun HomeScreenSnackBar(
             duration = SnackbarDuration.Short
         )
         when (action) {
-            SnackbarResult.Dismissed -> (viewModel::messageDismissed)()
-            SnackbarResult.ActionPerformed -> (viewModel::retry)()
+            SnackbarResult.Dismissed -> onDismiss()
+            SnackbarResult.ActionPerformed -> onRetry()
         }
     }
 }

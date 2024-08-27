@@ -1,5 +1,6 @@
 package com.example.bookbuddy.ui.detailscreen
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -37,6 +38,7 @@ class DetailScreenViewModel @Inject constructor(
         viewModelScope.launch{
             _uiState.update {
                 try {
+
                     DetailScreenState.DetailView(book = detailsRepository.getBookDetails(id))
                 } catch (e: Exception) {
                     val error: Int = if(e is IllegalArgumentException){
@@ -44,9 +46,12 @@ class DetailScreenViewModel @Inject constructor(
                     } else {
                         R.string.error
                     }
+                    Log.d("DetailScreenViewModel", "getBook: $error")
                     DetailScreenState.Error(listOf(error))
                 }
             }
+            Log.d("DetailScreenViewModel", "getBook: ${_uiState.value} $id")
+
         }
     }
 

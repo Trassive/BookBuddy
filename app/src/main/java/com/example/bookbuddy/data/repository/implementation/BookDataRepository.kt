@@ -1,5 +1,6 @@
 package com.example.bookbuddy.data.repository.implementation
 
+import android.util.Log
 import com.example.bookbuddy.data.exception.OutOfCacheMemoryException
 import com.example.bookbuddy.data.exception.OutOfDataException
 import com.example.bookbuddy.model.DownloadState
@@ -9,6 +10,7 @@ import com.example.bookbuddy.data.util.FileHandler
 import com.example.bookbuddy.data.util.InternalDownloadState
 import com.example.bookbuddy.data.local.entities.BookResource
 import com.example.bookbuddy.data.local.entities.SavedBook
+import com.example.bookbuddy.data.local.entities.SavedLocator
 import com.example.bookbuddy.data.remote.BookRemoteDataSource
 import com.example.bookbuddy.data.repository.interfaces.BookCatalogueRepository
 import com.example.bookbuddy.data.repository.interfaces.BookDetailsRepository
@@ -18,6 +20,7 @@ import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.model.BookWithResources
 import com.example.bookbuddy.model.LibraryBook
 import com.example.bookbuddy.model.toBook
+import com.example.bookbuddy.network.BookMetadata
 import com.example.bookbuddy.network.RemoteBook
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -31,8 +34,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.xml.sax.ext.Locator2
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
@@ -45,7 +49,7 @@ class BookDataRepository @Inject constructor(
 ): BookCatalogueRepository, BookDetailsRepository, OfflineBookRepository, ReadiumRepository {
     private var nextPageLink: String? = null
     private var count: Int = 0
-    override suspend fun getCatalogue(query: String): List<Book> = withContext(dispatcherIO){
+    override suspend fun getCatalogue(query: String?): List<Book> = withContext(dispatcherIO){
 
         val books = bookRemoteDataSource.getBooks((gutenbergQuery(search = query)))
              .also {
@@ -82,7 +86,7 @@ class BookDataRepository @Inject constructor(
         }
 
         val bookRemoteDeferred = async(dispatcherIO) {
-            val book = bookRemoteDataSource.getBook(id).books
+            val book = bookRemoteDataSource.getBooks(mapOf("ids" to id.toString())).books
             ensureActive()
             mergeMetaData(book)
         }
@@ -150,23 +154,37 @@ class BookDataRepository @Inject constructor(
         }
     }
 
-    override suspend fun getBookUrl(id: Int): AbsoluteUrl {
-        TODO("Not yet implemented")
+    override suspend fun getBookUrl(id: Int): String = withContext(dispatcherIO){
+            val book = bookLocalDataSource.getBook(id)?: throw IllegalArgumentException("Book Not Found")
+            return@withContext book.resource.downloadPath?: throw IllegalArgumentException("Book Not Downloaded")
     }
 
-    override suspend fun updateProgress(locator: Locator) {
-        TODO("Not yet implemented")
+
+    override suspend fun updateProgress(id: Int,locator: Locator) = withContext(dispatcherIO){
+            bookLocalDataSource.saveProgress(locator = locator.toSavedLocator(id))
     }
 
-    override suspend fun getLoctor(id: Int): Locator? {
-        TODO("Not yet implemented")
+
+    override suspend fun getLoctor(id: Int): Locator? = withContext(dispatcherIO){
+            return@withContext bookLocalDataSource.getLocator(id)?.toLocator()
     }
+
 
     private suspend fun mergeMetaData(remoteBooks: List<RemoteBook>): List<Book> = coroutineScope{
         return@coroutineScope remoteBooks.map{ book: RemoteBook->
-            val metaData = bookRemoteDataSource.getAdditionalMetadata(googleBooksQuery(title = book.title, author = book.authors[0].name ))
+            val metaData:BookMetadata? = try{
+                bookRemoteDataSource.getAdditionalMetadata(
+                    googleBooksQuery(
+                        title = book.title,
+                        author = book.authors[0].name
+                    )
+                )
+            } catch( e: Exception){
+                Log.d("BookDataRepository", "mergeMetaData: ${e.message}")
+                null
+            }
             ensureActive()
-            book.toBook(description = metaData.items.volumeInfo.description)
+            book.toBook(description = metaData?.items?.volumeInfo?.description?:" Description Not Found" )
         }
     }
     private companion object{
@@ -230,5 +248,33 @@ class BookDataRepository @Inject constructor(
                 downloadLink = this.resource.downloadLink
             )
         }
+        fun Locator.toSavedLocator(id: Int) = SavedLocator(
+
+            bookId = id,
+            href = this.href.toString(),
+            type = this.mediaType.toString(),
+            totalProgression =  this.locations.totalProgression,
+            progression = this.locations.progression,
+            textBefore = this.text.before,
+            position = this.locations.position,
+            textAfter = this.text.before,
+            textHighlight = this.text.highlight,
+            title = this.title
+        )
+        fun SavedLocator.toLocator() = Locator(
+                href = Url(this.href)!!,
+                mediaType = MediaType.invoke(this.type)!!,
+                locations = Locator.Locations(
+                    progression = this.progression,
+                    totalProgression = this.totalProgression,
+                    position = this.position
+                ),
+                text = Locator.Text(
+                    before = this.textBefore,
+                    after = this.textAfter,
+                    highlight = this.textHighlight
+                ),
+                title = this.title
+        )
     }
 }

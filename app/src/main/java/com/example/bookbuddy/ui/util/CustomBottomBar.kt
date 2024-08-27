@@ -4,7 +4,8 @@ package com.example.bookbuddy.ui.util
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Box
+ import androidx.compose.foundation.background
+ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -50,7 +51,8 @@ fun CustomBottomBar(
     Log.d("BottomBar selectedItem",selectedItem.index().toString())
     AnimatedNavigationBar(
         modifier = Modifier
-            .height(75.dp),
+            .height(75.dp)
+            .background(Color(0xD3FFDEB9)),
         selectedIndex = selectedItem.index(),
         ballColor = Color(0xFFDAAA63),
         cornerRadius = shapeCornerRadius(40.dp),

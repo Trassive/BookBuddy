@@ -175,7 +175,6 @@ fun CarouselCard(
                         scaleX *= scale* state.progress(state.settledValue, state.targetValue)
                         scaleY *= scale* state.progress(state.settledValue, state.targetValue)
                     }
-                    .background(Color.Cyan)
                 ,
                 id = book.id,
                 imageUrl = book.coverImage

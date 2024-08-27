@@ -1,5 +1,6 @@
 package com.example.bookbuddy.ui.util
 
+import android.util.Log
 import androidx.annotation.RawRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -22,9 +23,11 @@ fun LottieAnimationComposable(@RawRes id: Int, modifier: Modifier) {
     )
     Surface(modifier.fillMaxSize()){
         LottieAnimation(
+
             composition = composition,
             progress = { progress },
             alignment = Alignment.Center,
         )
+        Log.d("LottieAnimationComposable", "LottieAnimationComposable")
     }
 }

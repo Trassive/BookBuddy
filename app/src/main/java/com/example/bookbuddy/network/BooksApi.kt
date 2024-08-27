@@ -10,8 +10,11 @@ import retrofit2.http.Streaming
 import retrofit2.http.Url
 
 interface BooksApi {
+    @GET("/books")
+    suspend fun getBooks( @QueryMap(encoded = true) queries: Map<String,String> ): RemoteBookList
+
     @GET
-    suspend fun getBooks(@Url url: String? =null, @QueryMap queries: Map<String,String>? = null ): RemoteBookList
+    suspend fun getPageBooks(@Url url: String): RemoteBookList
 
     @Streaming
     @GET

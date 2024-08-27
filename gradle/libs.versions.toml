@@ -19,7 +19,7 @@ activityCompose = "1.9.1"
 composeBom = "2024.08.00"
 
 lottieCompose = "6.5.0"
-navigationCompose = "2.8.0-beta02"
+navigationCompose = "2.8.0-rc01"
 readium = "3.0.0-beta.2"
 retrofit = "2.11.0"
 roomKtx = "2.6.1"

@@ -45,7 +45,8 @@ fun CoilImage(
         AsyncImage(
             model = imageRequest,
             contentDescription = stringResource(R.string.cover_image),
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize()
         )
     }
 }

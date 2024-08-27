@@ -163,7 +163,6 @@ fun DetailView(
                         diskCachePolicy = if (detailViewState.book.isSaved) CachePolicy.ENABLED else CachePolicy.DISABLED,
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Cyan)
                     )
                 }
                 Text(

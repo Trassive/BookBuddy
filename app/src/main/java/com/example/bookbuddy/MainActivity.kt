@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.fragment.app.FragmentActivity
+import androidx.navigation.compose.rememberNavController
+import com.example.bookbuddy.ui.EbookReaderApp
 import com.example.compose.BookBuddyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,29 +23,14 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         setContent {
             BookBuddyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+
+                    EbookReaderApp(
+                        navController = rememberNavController(),
+                        modifier = Modifier.fillMaxSize()
                     )
-                }
+
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BookBuddyTheme {
-        Greeting("Android")
-    }
-}

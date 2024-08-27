@@ -52,8 +52,14 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeViewContent(homeUiState: HomeUiState.HomeView, onClick: (Int)-> Unit, loadMore:()->Unit, modifier: Modifier = Modifier) {
+fun HomeViewContent(
+    homeUiState: HomeUiState.HomeView,
+    onClick: (Int) -> Unit,
+    loadMore: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     var bottomSheetBook by remember{ mutableStateOf<Book?>(null) }
 
 

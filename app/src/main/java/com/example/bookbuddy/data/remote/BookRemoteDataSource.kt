@@ -1,5 +1,6 @@
 package com.example.bookbuddy.data.remote
 
+import android.util.Log
 import com.example.bookbuddy.network.BookDetailsApi
 import com.example.bookbuddy.network.BookMetadata
 import com.example.bookbuddy.network.BooksApi
@@ -13,20 +14,19 @@ class BookRemoteDataSource @Inject constructor(
     private val booksDetailsApi: BookDetailsApi
 ) {
 
-    suspend fun getBooks(queries: Map<String,String>?): RemoteBookList{
-     return booksApi.getBooks(queries = queries)
+    suspend fun getBooks(queries: Map<String,String>): RemoteBookList{
+        Log.d("BookRemoteDataSource", "getBooks: $queries")
+        return booksApi.getBooks(queries = queries)
     }
 
     suspend fun getBooks(url: String): RemoteBookList{
-    return booksApi.getBooks(url = url)
+    return booksApi.getPageBooks(url = url)
     }
+
     suspend fun downloadBooks(url: String): Response<ResponseBody>{
      return booksApi.downloadBook(url)
     }
 
-    suspend fun getBook(id: Int): RemoteBookList {
-     return booksApi.getBooks(queries = mapOf("ids" to id.toString()))
-    }
 
     suspend fun getAdditionalMetadata(query: String): BookMetadata {
         return booksDetailsApi.getDescription(query)

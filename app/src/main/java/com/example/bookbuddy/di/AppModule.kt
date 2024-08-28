@@ -21,6 +21,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Singleton
@@ -41,7 +43,7 @@ object AppModule {
     @Provides
     @Singleton
     fun providesBookDetailsApi(): BookDetailsApi{
-        val retrofit = createRetrofit("https://www.googleapis.com/books/v1/")
+        val retrofit = createRetrofit("https://www.googleapis.com/")
 
         val bookDetailsApi: BookDetailsApi by lazy{
             retrofit.create(BookDetailsApi::class.java)
@@ -74,9 +76,18 @@ object AppModule {
 }
 
 private fun createRetrofit(baseUrl: String): Retrofit{
+    val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY // Set log level
+    }
+
+    val client = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .build()
+
     val json = Json { ignoreUnknownKeys = true }
     return Retrofit.Builder()
         .baseUrl(baseUrl)
+        .client(client)
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
 }

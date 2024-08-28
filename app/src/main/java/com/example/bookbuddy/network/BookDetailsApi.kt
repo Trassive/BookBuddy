@@ -4,25 +4,24 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import retrofit2.http.GET
 import retrofit2.http.Query
+import retrofit2.http.QueryMap
 
 interface BookDetailsApi {
-    @GET("/volumes")
+    @GET("books/v1/volumes")
     suspend fun getDescription(
-        @Query("q") query: String,
-        @Query("startIndex") startIndex: Int =0,
-        @Query("maxResults") maxResults: Int =1
+        @QueryMap(encoded = true ) query: Map<String,String>
     ): BookMetadata
 }
 
 @Serializable
 data class BookMetadata(
-    @SerialName("items") val items: Items
+    @SerialName("items") val items: List<Item> = listOf()
 )
 @Serializable
-data class Items(
-    @SerialName("volumeInfo") val volumeInfo: VolumeInfo
+data class Item(
+    @SerialName("volumeInfo") val volumeInfo: VolumeInfo? = null
 )
 @Serializable
 data class VolumeInfo(
-    @SerialName("description") val description: String
+    @SerialName("description") val description: String? = null
 )

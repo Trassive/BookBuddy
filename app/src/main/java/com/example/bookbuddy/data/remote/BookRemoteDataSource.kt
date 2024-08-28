@@ -28,7 +28,7 @@ class BookRemoteDataSource @Inject constructor(
     }
 
 
-    suspend fun getAdditionalMetadata(query: String): BookMetadata {
+    suspend fun getAdditionalMetadata(query: Map<String,String>): BookMetadata {
         return booksDetailsApi.getDescription(query)
     }
 }

@@ -9,7 +9,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,11 +52,10 @@ fun CustomBottomBar(
     Log.d("BottomBar selectedItem",selectedItem.index().toString())
     AnimatedNavigationBar(
         modifier = Modifier
-            .height(75.dp)
-            .background(Color(0xD3FFDEB9)),
+            .height(60.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
         selectedIndex = selectedItem.index(),
         ballColor = Color(0xFFDAAA63),
-        cornerRadius = shapeCornerRadius(40.dp),
         barColor = Color(0xFFDAAA63),
         ballAnimation = Parabolic(tween(800, easing = LinearOutSlowInEasing)),
         indentAnimation = StraightIndent(

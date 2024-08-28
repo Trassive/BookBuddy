@@ -22,6 +22,7 @@ import com.example.bookbuddy.model.LibraryBook
 import com.example.bookbuddy.model.toBook
 import com.example.bookbuddy.network.BookMetadata
 import com.example.bookbuddy.network.RemoteBook
+import com.example.bookbuddy.network.VolumeInfo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -95,11 +96,7 @@ class BookDataRepository @Inject constructor(
 
 
         return@coroutineScope bookLocal?.constructBook() ?: with(bookRemoteDeferred.await()){
-            if(this.size!=1){
-                throw IllegalArgumentException("Invalid Book")
-            } else{
-                this[0]
-            }
+           this[0]
         }
     }
 
@@ -172,19 +169,19 @@ class BookDataRepository @Inject constructor(
 
     private suspend fun mergeMetaData(remoteBooks: List<RemoteBook>): List<Book> = coroutineScope{
         return@coroutineScope remoteBooks.map{ book: RemoteBook->
-            val metaData:BookMetadata? = try{
-                bookRemoteDataSource.getAdditionalMetadata(
+            val metaData:VolumeInfo? = try{
+                val metadata = bookRemoteDataSource.getAdditionalMetadata(
                     googleBooksQuery(
                         title = book.title,
                         author = book.authors[0].name
                     )
                 )
+                metadata.items[0].volumeInfo
             } catch( e: Exception){
-                Log.d("BookDataRepository", "mergeMetaData: ${e.message}")
                 null
             }
             ensureActive()
-            book.toBook(description = metaData?.items?.volumeInfo?.description?:" Description Not Found" )
+            book.toBook(description = metaData?.description?:" Description Not Found" )
         }
     }
     private companion object{
@@ -200,14 +197,15 @@ class BookDataRepository @Inject constructor(
             }
             return mutableMap
         }
-        fun googleBooksQuery(title: String, author: String): String {
+        fun googleBooksQuery(title: String, author: String): Map<String,String> {
 
-            val encodedTitle = URLEncoder.encode("intitle:$title", StandardCharsets.UTF_8.toString())
-            val encodedAuthor = URLEncoder.encode("inauthor:$author", StandardCharsets.UTF_8.toString())
+            val encodedTitle = URLEncoder.encode(title, StandardCharsets.UTF_8.toString())
+            val encodedAuthor = URLEncoder.encode(author, StandardCharsets.UTF_8.toString())
 
-            val query = "$encodedTitle+$encodedAuthor"
+            val query = "intitle:\"${encodedTitle}\"+inauthor:\"${encodedAuthor}\""
 
-            return "?q=$query"
+            return mapOf("q" to query, "printType" to "books", "fields" to "items/volumeInfo/description", "orderBy" to "relevance")
+
         }
 
         fun destructBook(book: Book, downloadedPath: String? = null): BookWithResources{

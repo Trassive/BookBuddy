@@ -75,6 +75,7 @@ dependencies {
     implementation (libs.retrofit)
     runtimeOnly(libs.converter.kotlinx.serialization)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.logging.interceptor)
     implementation(libs.converter.kotlinx.serialization)
     //Room
     implementation(libs.androidx.room.ktx)

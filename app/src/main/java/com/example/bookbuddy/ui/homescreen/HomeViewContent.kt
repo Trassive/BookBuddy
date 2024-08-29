@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,6 +45,7 @@ import com.example.bookbuddy.ui.theme.AppShapes.bottomRoundedLarge
 import com.example.bookbuddy.ui.util.BookCard
 import com.example.bookbuddy.ui.util.CarouselPager
 import com.example.bookbuddy.ui.util.CustomBottomSheet
+import com.example.bookbuddy.ui.util.reachedBottom
 import com.example.compose.BookBuddyTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -79,7 +79,7 @@ fun HomeViewContent(
         }
     }
     LaunchedEffect(key1 = reachedBottom) {
-        loadMore()
+         if(reachedBottom) loadMore()
     }
     LazyColumn(
         state = lazyListState,
@@ -162,10 +162,7 @@ fun HomeViewContent(
             }
     }
 }
-fun LazyListState.reachedBottom(buffer: Int = 1): Boolean {
-    val lastVisibleItem = this.layoutInfo.visibleItemsInfo.lastOrNull()
-    return lastVisibleItem?.index != 0 && lastVisibleItem?.index == this.layoutInfo.totalItemsCount - buffer
-}
+
 
 @Preview(showBackground = true)
 @Composable

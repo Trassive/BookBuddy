@@ -30,4 +30,6 @@
     <string name="download">Download</string>
     <string name="progress">%d%%</string>
     <string name="downloading">Downloading..</string>
+    <string name="no_books_found">No books found</string>
+    <string name="no_author_found">No author found</string>
 </resources>

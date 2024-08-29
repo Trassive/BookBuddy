@@ -17,12 +17,14 @@ import com.example.compose.BookBuddyTheme
 @Composable
 fun SearchView(
     homeUiState: HomeUiState.SearchView,
+    loadMore: ()->Unit,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ){
     BookList(
         books = homeUiState.bookList,
         onClick = onClick,
+        loadMore = loadMore,
         diskCachePolicy = CachePolicy.DISABLED,
         memoryCachePolicy = CachePolicy.ENABLED,
         contentPadding = PaddingValues(dimensionResource(id = R.dimen.large_padding)),
@@ -38,6 +40,7 @@ fun SearchViewPreview(){
         SearchView(
             homeUiState = HomeUiState.SearchView(searchText = "", bookList = fakeData.books),
             onClick = {},
+            loadMore = {}
         )
     }
 }

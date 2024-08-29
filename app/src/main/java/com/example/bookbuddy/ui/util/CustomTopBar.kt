@@ -10,9 +10,13 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -23,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -85,7 +90,8 @@ fun CustomSearchBar(
         modifier = modifier
             .fillMaxWidth()
             .height(64.dp)
-            .clip(MaterialTheme.shapes.large)
+            .clip(RoundedCornerShape(60.dp)),
+        color = TopAppBarDefaults.centerAlignedTopAppBarColors().containerColor
     ){
         TextField(
             value = searchTextState,
@@ -96,6 +102,7 @@ fun CustomSearchBar(
                 Icon(
                     painter = painterResource(id = R.drawable.round_search_24),
                     contentDescription = null,
+                    tint =TopAppBarDefaults.centerAlignedTopAppBarColors().actionIconContentColor,
                     modifier = Modifier.alpha(0.7f)
                 )
             },
@@ -147,7 +154,9 @@ fun HomeScreenTopBar(
                 searchTextState = searchTextState,
                 onValueChange = onValueChange,
                 onCloseClick = onStateToggle,
-                onSearch = onSearchClicked
+                onSearch = onSearchClicked,
+                modifier = Modifier.windowInsetsPadding(insets = WindowInsets.statusBars)
+                    .padding(dimensionResource(id = R.dimen.medium_padding))
             )
         } else{
             CustomTopBar(

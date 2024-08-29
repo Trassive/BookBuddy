@@ -2,6 +2,7 @@
 
 package com.example.bookbuddy.ui.util
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,12 +17,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,13 +51,25 @@ import com.example.compose.BookBuddyTheme
 fun BookList(
     books: List<Book>,
     onClick: (Int)-> Unit,
+    loadMore: ()-> Unit,
     modifier: Modifier,
     diskCachePolicy: CachePolicy,
     memoryCachePolicy: CachePolicy = CachePolicy.ENABLED,
     contentPadding: PaddingValues = PaddingValues(dimensionResource(id = R.dimen.large_padding)),
 ){
     var bottomSheetBook by remember{ mutableStateOf<Book?>(null) }
+    val lazyListState = rememberLazyListState()
+    val reachedBottom: Boolean by remember {
+        derivedStateOf {
+            lazyListState.reachedBottom(4)
+        }
+    }
+    LaunchedEffect(key1 = reachedBottom) {
+        Log.d("BookList", "reachedBottom: $reachedBottom")
+        if(reachedBottom) loadMore()
+    }
     LazyColumn(
+        state = lazyListState,
         contentPadding = contentPadding,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.medium_padding)),
@@ -165,11 +181,11 @@ fun BookCard(
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.small_padding))
+                    modifier = Modifier. padding(bottom = dimensionResource(id = R.dimen.small_padding))
 
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = book.authors.first())
+                    Text(text = book.authors.firstOrNull()?: stringResource(R.string.no_author_found))
                     if (book.authors.size > 1) {
                         Text(
                             text = "+${book.authors.size - 1} more",
@@ -204,6 +220,7 @@ fun ListPreview(){
             modifier = Modifier,
             diskCachePolicy = CachePolicy.DISABLED,
             onClick = {},
+            loadMore = {}
         )
     }
 }

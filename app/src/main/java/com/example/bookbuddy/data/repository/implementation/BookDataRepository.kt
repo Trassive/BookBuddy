@@ -2,7 +2,6 @@ package com.example.bookbuddy.data.repository.implementation
 
 import android.util.Log
 import com.example.bookbuddy.data.exception.InvalidRequestException
-import com.example.bookbuddy.data.exception.OutOfCacheMemoryException
 import com.example.bookbuddy.data.exception.OutOfDataException
 import com.example.bookbuddy.data.local.datasource.BookLocalDataSource
 import com.example.bookbuddy.data.local.entities.BookResource
@@ -19,6 +18,7 @@ import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.model.BookWithResources
 import com.example.bookbuddy.model.DownloadState
 import com.example.bookbuddy.model.LibraryBook
+import com.example.bookbuddy.model.Update
 import com.example.bookbuddy.model.toBook
 import com.example.bookbuddy.network.RemoteBook
 import com.example.bookbuddy.network.VolumeInfo
@@ -50,15 +50,15 @@ class BookDataRepository @Inject constructor(
     private val fileHandler: FileHandler,
     private val dispatcherIO: CoroutineDispatcher = Dispatchers.IO
 ): BookCatalogueRepository, BookDetailsRepository, OfflineBookRepository, ReadiumRepository {
-    private var nextPageLink: String? = null
-    private var count: Int = 0
+    private var nextHomePageLink: String? = null
+    private var nextSearchPageLink: String? = null
     override suspend fun getCatalogue(query: String?): List<Book> = withContext(dispatcherIO){
         val books: List<RemoteBook>
         val time1 = measureTime{
              books = bookRemoteDataSource.getBooks((gutenbergQuery(search = query)))
                 .also {
-                    nextPageLink = it.next
-                    count = it.books.size
+                    if(query.isNullOrEmpty())  nextHomePageLink = it.next
+                    else nextSearchPageLink = it.next
                 }.books
             ensureActive()
         }
@@ -69,20 +69,23 @@ class BookDataRepository @Inject constructor(
         }
 
 
-    override suspend fun updateCatalogue(): Flow<List<Book>> = withContext(dispatcherIO) {
+    override suspend fun updateCatalogue(update: Update): Flow<List<Book>> = withContext(dispatcherIO) {
+
+
+        val updatePageLink = when(update){
+            Update.HOME -> ::nextHomePageLink
+            Update.SEARCH -> ::nextSearchPageLink
+        }
+        Log.d("BookDataRepository", "updateCatalogue: ${updatePageLink.name} ${updatePageLink.get()}")
         return@withContext flow {
             while(true){
-                if (nextPageLink == null) throw OutOfDataException(message = "No Data to update")
+                if (updatePageLink.get() == null) throw OutOfDataException(message = "No Data to update")
 
-                val books = bookRemoteDataSource.getBooks(nextPageLink!!).also {
-                    count += it.books.size
-                    nextPageLink = it.next
+                val books = bookRemoteDataSource.getBooks(updatePageLink.get()!!).also {data->
+                    updatePageLink.set(data.next)
                 }.books
-
+                Log.d("BookDataRepository", "updateCatalogue: ${books.size}")
                 emit(mergeMetaData(books))
-
-
-                if (count >= MAX_ITEMS) throw OutOfCacheMemoryException("Shrink the list")
             }
         }
     }
@@ -196,7 +199,6 @@ class BookDataRepository @Inject constructor(
         jobs.awaitAll()
     }
     private companion object{
-        const val MAX_ITEMS: Int = 50
         fun gutenbergQuery(search: String? = null, topic: String? = null): Map<String, String> {
             val mutableMap = mutableMapOf("mime_type" to "application%2Fepub%2Bzip")
 

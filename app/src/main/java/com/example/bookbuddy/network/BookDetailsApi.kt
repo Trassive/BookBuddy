@@ -3,7 +3,6 @@ package com.example.bookbuddy.network
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import retrofit2.http.GET
-import retrofit2.http.Query
 import retrofit2.http.QueryMap
 
 interface BookDetailsApi {

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.example.bookbuddy.ui.util
 
 import androidx.compose.animation.core.EaseOut
@@ -12,6 +14,7 @@ import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -33,12 +36,15 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -121,17 +127,12 @@ fun CarouselCard(
     onDrag: (Int) -> Unit,
     page: Int
 ) {
-    val requiredDrag = with(LocalDensity.current){20.dp.toPx()}
-
-    val state = remember {
+    val density = LocalDensity.current
+    val anchoredDraggableState = remember {
         AnchoredDraggableState(
             initialValue = DragAnchors.Start,
-            anchors =DraggableAnchors{
-                DragAnchors.Start to 0f
-                DragAnchors.End to requiredDrag
-            },
             positionalThreshold = {totalDistance: Float -> totalDistance*0.8f },
-            velocityThreshold = { requiredDrag*2f},
+            velocityThreshold = { density.run{ 20.dp.toPx()*2f }},
             snapAnimationSpec = spring(
                 stiffness = Spring.StiffnessLow,
                 dampingRatio = Spring.DampingRatioMediumBouncy
@@ -139,86 +140,121 @@ fun CarouselCard(
             decayAnimationSpec = FloatExponentialDecaySpec(0.1f).generateDecayAnimationSpec()
         )
     }
-    LaunchedEffect(key1 = state.currentValue) {
-        if(state.currentValue == DragAnchors.End){
+    SideEffect {
+        anchoredDraggableState.updateAnchors(
+            DraggableAnchors{
+                DragAnchors.Start at 0f
+                DragAnchors.End at density.run { 30.dp.toPx() }
+            }
+        )
+    }
+    LaunchedEffect(key1 = anchoredDraggableState.settledValue) {
+        if(anchoredDraggableState.currentValue == DragAnchors.End){
+
             onDrag(book.id)
+            anchoredDraggableState.animateTo(DragAnchors.Start)
         }
     }
+    val coroutineScope = rememberCoroutineScope()
     val pageOffset = pagerState.calculateCurrentOffsetForPage(page).absoluteValue
+    val dragProgress = anchoredDraggableState.progress(DragAnchors.Start,DragAnchors.End)
 
-    ElevatedCard(
-        modifier = modifier
-            .offset { IntOffset(y = state.offset.toInt(), x = 0) }
+
+    Box(
+        modifier
             .anchoredDraggable(
-                state = state,
+                state = anchoredDraggableState,
                 orientation = Orientation.Vertical,
                 enabled = pagerState.currentPage == page
-            ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 4.dp
-        ),
-        shape = MaterialTheme.shapes.extraLarge
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.medium_padding))
-        ) {
-            CoilImage(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxSize()
-                    .clip(MaterialTheme.shapes.large)
-                    .graphicsLayer {
-
-                        val scale = lerp(1f, 1.75f, pageOffset)
-                        scaleX *= scale* state.progress(state.settledValue, state.targetValue)
-                        scaleY *= scale* state.progress(state.settledValue, state.targetValue)
-                    }
-                ,
-                id = book.id,
-                imageUrl = book.coverImage
             )
-            Text(
-                text = book.title,
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding( dimensionResource(id = R.dimen.small_padding))
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = dimensionResource(id = R.dimen.small_padding))
-            ) {
-                Text(
-                    text = book.authors.first(),
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+            .offset {
+                IntOffset(
+                    y = anchoredDraggableState
+                        .requireOffset()
+                        .toInt(), x = 0
                 )
-                if (book.authors.size > 1) {
+            }
+            .graphicsLayer {
+                val scale = lerp(1f, 1.1f, dragProgress)
+                scaleX = scale
+                scaleY = scale
+            }
+        ){
+        ElevatedCard(
+            modifier = Modifier.fillMaxSize(),
+            elevation = CardDefaults.elevatedCardElevation(
+                defaultElevation = 4.dp
+            ),
+            shape = MaterialTheme.shapes.extraLarge
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.medium_padding))
+            ) {
+                CoilImage(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clip(MaterialTheme.shapes.large)
+                        .graphicsLayer {
+
+                            val scale = lerp(1f, 1.75f, pageOffset)
+                            scaleX = scale
+                            scaleY = scale
+                        },
+                    id = book.id,
+                    imageUrl = book.coverImage
+                )
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(dimensionResource(id = R.dimen.small_padding))
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = dimensionResource(id = R.dimen.small_padding))
+                ) {
                     Text(
-                        text = "+${book.authors.size - 1} more",
+                        text = book.authors.first(),
                         textAlign = TextAlign.Center,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.labelMedium,
                     )
+                    if (book.authors.size > 1) {
+                        Text(
+                            text = "+${book.authors.size - 1} more",
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.medium_padding)))
+                DragToListen(
+                    pageOffset = pageOffset,
+                    dragProgress = dragProgress,
+                    onDrag = {
+                        coroutineScope.launch{ anchoredDraggableState.animateTo(DragAnchors.End) }
+                        onDrag(book.id)
+                    }
+                )
             }
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.medium_padding)))
-            DragToListen(pageOffset)
         }
     }
 }
 
 @Composable
-private fun DragToListen(pageOffset: Float) {
+private fun DragToListen(pageOffset: Float, dragProgress: Float, onDrag: () -> Unit) {
     Box(
         modifier = Modifier
             .height(50.dp * (1 - pageOffset))
             .fillMaxWidth()
+            .offset { IntOffset(x = 0, y = lerp(0f, 50f, dragProgress).toInt()) }
             .graphicsLayer {
                 alpha = 1 - pageOffset
             }
@@ -227,23 +263,28 @@ private fun DragToListen(pageOffset: Float) {
             modifier = Modifier.align(Alignment.BottomCenter),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("DRAG TO READ",style = MaterialTheme.typography.labelLarge)
-            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.small_padding)))
-            DragArea()
+            Text(
+                text = "DRAG TO READ",
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.graphicsLayer {
+                    scaleX = lerp(1f, 1.3f, dragProgress)
+                    scaleY = lerp(1f, 1.2f, dragProgress)
+                }
+            )
+            Spacer(
+                modifier = Modifier.size(dimensionResource(id = R.dimen.small_padding))
+            )
+            IconButton(onClick = onDrag){
+                Icon(
+                    painterResource(id = R.drawable.round_expand_more_24), "down",
+                    modifier = Modifier
+                        .background(Color.Transparent)
+                )
+            }
         }
     }
 }
-@Composable
-private fun DragArea() {
-    Box {
-        Icon(
-            painterResource(id = R.drawable.round_expand_more_24), "down",
-            modifier = Modifier
-                .align(Alignment.Center)
-                .background(Color.Transparent)
-        )
-    }
-}
+
 
 fun PagerState.calculateCurrentOffsetForPage(page: Int): Float {
     return (currentPage - page) + currentPageOffsetFraction
@@ -262,7 +303,6 @@ fun SliderPreview(){
                 onDrag = {},
                 modifier = Modifier.requiredHeight(400.dp)
             )
-
         }
     }
 }

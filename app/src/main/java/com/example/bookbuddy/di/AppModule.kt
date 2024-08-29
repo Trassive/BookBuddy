@@ -20,11 +20,13 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
+import okhttp3.ConnectionPool
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 
@@ -82,7 +84,13 @@ private fun createRetrofit(baseUrl: String): Retrofit{
 
     val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .connectionPool(connectionPool = ConnectionPool(10, 1, TimeUnit.MINUTES))
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .writeTimeout(15, TimeUnit.SECONDS)
         .build()
+
+
 
     val json = Json { ignoreUnknownKeys = true }
     return Retrofit.Builder()

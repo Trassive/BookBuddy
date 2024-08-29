@@ -1,13 +1,10 @@
 package com.example.bookbuddy.data.repository.implementation
 
 import android.util.Log
+import com.example.bookbuddy.data.exception.InvalidRequestException
 import com.example.bookbuddy.data.exception.OutOfCacheMemoryException
 import com.example.bookbuddy.data.exception.OutOfDataException
-import com.example.bookbuddy.model.DownloadState
-import com.example.bookbuddy.data.exception.InvalidRequestException
 import com.example.bookbuddy.data.local.datasource.BookLocalDataSource
-import com.example.bookbuddy.data.util.FileHandler
-import com.example.bookbuddy.data.util.InternalDownloadState
 import com.example.bookbuddy.data.local.entities.BookResource
 import com.example.bookbuddy.data.local.entities.SavedBook
 import com.example.bookbuddy.data.local.entities.SavedLocator
@@ -16,17 +13,21 @@ import com.example.bookbuddy.data.repository.interfaces.BookCatalogueRepository
 import com.example.bookbuddy.data.repository.interfaces.BookDetailsRepository
 import com.example.bookbuddy.data.repository.interfaces.OfflineBookRepository
 import com.example.bookbuddy.data.repository.interfaces.ReadiumRepository
+import com.example.bookbuddy.data.util.FileHandler
+import com.example.bookbuddy.data.util.InternalDownloadState
 import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.model.BookWithResources
+import com.example.bookbuddy.model.DownloadState
 import com.example.bookbuddy.model.LibraryBook
 import com.example.bookbuddy.model.toBook
-import com.example.bookbuddy.network.BookMetadata
 import com.example.bookbuddy.network.RemoteBook
 import com.example.bookbuddy.network.VolumeInfo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -37,11 +38,12 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.xml.sax.ext.Locator2
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
+import kotlin.time.measureTime
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class BookDataRepository @Inject constructor(
     private val bookLocalDataSource: BookLocalDataSource,
     private val bookRemoteDataSource: BookRemoteDataSource,
@@ -51,15 +53,19 @@ class BookDataRepository @Inject constructor(
     private var nextPageLink: String? = null
     private var count: Int = 0
     override suspend fun getCatalogue(query: String?): List<Book> = withContext(dispatcherIO){
-
-        val books = bookRemoteDataSource.getBooks((gutenbergQuery(search = query)))
-             .also {
-                 nextPageLink = it.next
-                 count = it.books.size
-             }.books
-        ensureActive()
-
-        return@withContext mergeMetaData(books)
+        val books: List<RemoteBook>
+        val time1 = measureTime{
+             books = bookRemoteDataSource.getBooks((gutenbergQuery(search = query)))
+                .also {
+                    nextPageLink = it.next
+                    count = it.books.size
+                }.books
+            ensureActive()
+        }
+        val result: List<Book>
+        val time = measureTime{  result = mergeMetaData(books) }
+        Log.d("BookDataRepository", "get time $time1 merge: Time Taken: $time")
+        return@withContext result
         }
 
 
@@ -101,8 +107,8 @@ class BookDataRepository @Inject constructor(
     }
 
     override suspend fun saveBook(book: Book) {
-        val (book,resource) = destructBook(book)
-        bookLocalDataSource.saveBook(book = book, resource = resource)
+        val (savedBook,resource) = destructBook(book)
+        bookLocalDataSource.saveBook(book = savedBook, resource = resource)
     }
 
     override suspend fun unSaveBook(id: Int) {
@@ -122,8 +128,8 @@ class BookDataRepository @Inject constructor(
                         is InternalDownloadState.Failed -> DownloadState.Failed(state.error)
                         is InternalDownloadState.Finished -> {
                             withContext(dispatcherIO){
-                                val (book, resource) = destructBook(book, state.filePath)
-                                bookLocalDataSource.saveBook(book = book, resource = resource)
+                                val (savedBook, resource) = destructBook(book, state.filePath)
+                                bookLocalDataSource.saveBook(book = savedBook, resource = resource)
                             }
                             DownloadState.Finished
                         }
@@ -144,7 +150,6 @@ class BookDataRepository @Inject constructor(
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun getDownloadedBooks(): Flow<List<LibraryBook>> = withContext(dispatcherIO){
         return@withContext bookLocalDataSource.getBooks(true).mapLatest { books->
             books.map {book-> book.toLibraryBook(true) }
@@ -167,33 +172,39 @@ class BookDataRepository @Inject constructor(
     }
 
 
-    private suspend fun mergeMetaData(remoteBooks: List<RemoteBook>): List<Book> = coroutineScope{
-        return@coroutineScope remoteBooks.map{ book: RemoteBook->
-            val metaData:VolumeInfo? = try{
-                val metadata = bookRemoteDataSource.getAdditionalMetadata(
-                    googleBooksQuery(
-                        title = book.title,
-                        author = book.authors[0].name
+    private suspend fun mergeMetaData(remoteBooks: List<RemoteBook>): List<Book> = withContext(dispatcherIO){
+        val jobs = remoteBooks.map { book ->
+            async {
+                val metaData: VolumeInfo? = try {
+                    val metadata = bookRemoteDataSource.getAdditionalMetadata(
+                        googleBooksQuery(
+                            title = book.title,
+                            author = book.authors.firstOrNull()?.name ?: ""
+                        )
                     )
-                )
-                metadata.items[0].volumeInfo
-            } catch( e: Exception){
-                null
+                    metadata.items.firstOrNull()?.volumeInfo
+                } catch (e: Exception) {
+                    null
+                } catch (e: TimeoutCancellationException){
+                    Log.d("BookDataRepository", "${e.message} ${e.cause}")
+                    null
+                }
+
+                book.toBook(description = metaData?.description ?: "Description Not Found")
             }
-            ensureActive()
-            book.toBook(description = metaData?.description?:" Description Not Found" )
         }
+        jobs.awaitAll()
     }
     private companion object{
         const val MAX_ITEMS: Int = 50
         fun gutenbergQuery(search: String? = null, topic: String? = null): Map<String, String> {
             val mutableMap = mutableMapOf("mime_type" to "application%2Fepub%2Bzip")
 
-            search?.let{search->
-                mutableMap.put("search" , search.replace(" ", "%20"))
+            search?.let{
+                mutableMap.put("search" , it.replace(" ", "%20"))
             }
-            topic?.let { topic->
-                mutableMap.put("topic", topic.replace(" ", "%20"))
+            topic?.let {
+                mutableMap.put("topic", it.replace(" ", "%20"))
             }
             return mutableMap
         }

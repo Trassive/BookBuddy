@@ -96,7 +96,7 @@ fun HomeViewContent(
             ) {
                 CarouselPager(
                     books = homeUiState.carouselBooks,
-                    onDrag = {},
+                    onDrag = onClick,
                     modifier = Modifier.fillMaxSize()
                 )
             }

@@ -18,13 +18,12 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.bookbuddy.navigation.AppNavGraph
 import com.example.bookbuddy.navigation.RouteScreen
 import com.example.bookbuddy.ui.util.CustomBottomBar
 
 @Composable
-fun EbookReaderApp(navController: NavHostController = rememberNavController(), modifier: Modifier = Modifier){
+fun EbookReaderApp(navController: NavHostController, modifier: Modifier = Modifier){
     val currentScreen by navController.currentScreenAsState()
     Scaffold(
         bottomBar = {

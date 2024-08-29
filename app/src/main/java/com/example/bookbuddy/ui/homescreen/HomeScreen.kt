@@ -1,7 +1,6 @@
 package com.example.bookbuddy.ui.homescreen
 
 import android.util.Log
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -61,7 +60,11 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
                 errorScreen = false
             }
             is HomeUiState.SearchView ->{
-                SearchView(state, onClick = onClick, Modifier.padding(innerPadding))
+                SearchView(
+                    homeUiState = state,
+                    onClick = onClick,
+                    modifier = Modifier.padding(top =innerPadding.calculateTopPadding()).fillMaxSize()
+                )
             }
             is HomeUiState.Error ->{
                 if(state.error.isNotEmpty()){

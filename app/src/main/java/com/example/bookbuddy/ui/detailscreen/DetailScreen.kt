@@ -1,13 +1,10 @@
 package com.example.bookbuddy.ui.detailscreen
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -17,8 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,20 +25,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -60,20 +61,14 @@ import com.example.compose.BookBuddyTheme
 fun DetailScreen(detailScreenViewModel: DetailScreenViewModel, onArrow: () -> Unit, onClick: (Int)->Unit) {
     val detailScreenState by detailScreenViewModel.uiState.collectAsStateWithLifecycle()
     val downloadState by detailScreenViewModel.downloadState.collectAsStateWithLifecycle()
+    Log.d("DownloadButton", "D Detail Screen ownloadState: $downloadState")
     Scaffold(
         topBar = {
             CustomTopBar(
                 topBarTitle = stringResource(R.string.detail),
                 actions = {
                     (detailScreenState as? DetailScreenState.DetailView)?.book?.let{book->
-                        if(book.isSaved){
-                            IconButton(onClick = detailScreenViewModel::toggleBookState) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.round_bookmark_24),
-                                    contentDescription = stringResource(R.string.unsave)
-                                )
-                            }
-                        }else if(book.isDownloaded) {
+                        if(book.isDownloaded) {
                             IconButton(onClick = detailScreenViewModel::toggleBookState) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.rounded_delete_24),
@@ -81,11 +76,20 @@ fun DetailScreen(detailScreenViewModel: DetailScreenViewModel, onArrow: () -> Un
                                 )
                             }
                         } else {
-                            IconButton(onClick = detailScreenViewModel::toggleBookState) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.outline_bookmark_add_24),
-                                    contentDescription = stringResource(R.string.save)
-                                )
+                            if (book.isSaved) {
+                                IconButton(onClick = detailScreenViewModel::toggleBookState) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.round_bookmark_24),
+                                        contentDescription = stringResource(R.string.unsave)
+                                    )
+                                }
+                            } else {
+                                IconButton(onClick = detailScreenViewModel::toggleBookState) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.outline_bookmark_add_24),
+                                        contentDescription = stringResource(R.string.save)
+                                    )
+                                }
                             }
                         }
                     }
@@ -98,13 +102,13 @@ fun DetailScreen(detailScreenViewModel: DetailScreenViewModel, onArrow: () -> Un
         when (val state = detailScreenState) {
             is DetailScreenState.Loading -> {
                 LottieAnimationComposable(R.raw.empty, modifier = Modifier
-                    .padding(innerPadding)
+                    .padding(innerPadding.calculateTopPadding())
                     .fillMaxSize())
             }
 
             is DetailScreenState.Error -> {
                 LottieAnimationComposable(R.raw.empty, modifier = Modifier
-                    .padding(innerPadding)
+                    .padding(innerPadding.calculateTopPadding())
                     .fillMaxSize())
             }
 
@@ -117,7 +121,7 @@ fun DetailScreen(detailScreenViewModel: DetailScreenViewModel, onArrow: () -> Un
                         detailScreenViewModel.downloadBook()
                     },
                     modifier = Modifier
-                        .padding(innerPadding)
+                        .padding(top = innerPadding.calculateTopPadding())
                         .fillMaxSize()
                 )
             }
@@ -184,28 +188,54 @@ fun DetailView(
                     .weight(4f)
                     .fillMaxSize()
             ) {
-                LazyColumn(
+                Column(
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.Start,
-                    contentPadding = PaddingValues(
-                        horizontal = dimensionResource(id = R.dimen.large_padding),
-                        vertical = 50.dp
-                    ),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    customStickyHeader(
-                        authors = detailViewState.book.authors,
-                        categories = detailViewState.book.categories
-                    )
-                    item {
-                        Text(
-                            text = "Overview",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.large_padding))
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            start = dimensionResource(id = R.dimen.large_padding),
+                            end = dimensionResource(id = R.dimen.large_padding),
+                            top = 40.dp,
+                            bottom = 0.dp
                         )
-                        Text(text = detailViewState.book.description)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.Top,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .padding(vertical = dimensionResource(id = R.dimen.large_padding))
+                            .background(MaterialTheme.colorScheme.surface)
+
+                    ){
+                        ExpandableAuthorList(
+                            listName = "Categories",
+                            list = detailViewState.book.categories,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f)
+                        )
+
+                        ExpandableAuthorList(
+                            listName = "Authors",
+                            list = detailViewState.book.authors,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f)
+                        )
                     }
+                    Text(
+                        text = "Overview",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.large_padding))
+                    )
+                    Text(
+                        text = "${detailViewState.book.description}\r\n\n\n",
+                        modifier = Modifier.verticalScroll(rememberScrollState())
+                    )
                 }
             }
         }
@@ -221,75 +251,81 @@ fun DetailView(
         )
     }
 }
-@OptIn(ExperimentalFoundationApi::class)
-fun LazyListScope.customStickyHeader(authors: List<String>, categories: List<String>){
-    stickyHeader{
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Top,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(vertical = 20.dp)
-            ){
-            ExpandableAuthorList(listName = "Categories", list = categories,modifier = Modifier
-                .height(70.dp)
-                .weight(1f)
-            )
 
-            ExpandableAuthorList(listName = "Authors", list = authors,modifier = Modifier
-                .height(70.dp)
-                .weight(1f)
-            )
-        }
-    }
-}
 @Composable
 fun ExpandableAuthorList(listName: String, list: List<String>, modifier: Modifier = Modifier) {
-    var expandedState by remember { mutableStateOf(false) }
-    var visibleItems by remember { mutableIntStateOf(1) }
 
+    var toggleTextState by remember{ mutableStateOf(Pair(false,"Read More....")) }
+
+    val annotatedString = buildAnnotatedString {
+        if(list.size<= 2){
+            withStyle(style = SpanStyle(
+                fontWeight = FontWeight.W500,
+                fontStyle = MaterialTheme.typography.labelLarge.fontStyle,
+                fontSize = MaterialTheme.typography.labelLarge.fontSize
+            )){
+                append(list.joinToString(", "))
+            }
+            return@buildAnnotatedString
+        }
+        val baseString = list.take(2).joinToString(", ") + " "
+        withStyle(style = SpanStyle(
+            fontWeight = FontWeight.W500,
+            fontStyle = MaterialTheme.typography.labelLarge.fontStyle,
+            fontSize = MaterialTheme.typography.labelLarge.fontSize
+        )
+        ){
+            append(baseString)
+
+            if(toggleTextState.first){
+                append(
+                    list.drop(2).joinToString(", ") + " "
+                )
+            }
+
+        }
+        val style = SpanStyle(
+            color = Color.Blue.copy(alpha = 0.48f),
+            fontSize = MaterialTheme.typography.labelLarge.fontSize,
+            fontWeight = FontWeight.W600,
+            fontStyle = MaterialTheme.typography.labelLarge.fontStyle
+        )
+        val link = LinkAnnotation.Clickable(
+            tag = "collapse",
+            styles = TextLinkStyles(
+                style = style,
+                pressedStyle = style.copy(color = Color.LightGray)
+            ),
+            linkInteractionListener = {
+                toggleTextState = if(toggleTextState.first){
+                    Pair(false, "Read More....")
+                } else {
+                    Pair(true, "Read Less....")
+                }
+            }
+        )
+        withLink(link){
+            append(toggleTextState.second)
+        }
+
+    }
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = modifier
             .fillMaxSize()
     ) {
-        Text(listName, style = MaterialTheme.typography.titleMedium,modifier = Modifier.alpha(0.7f))
+        Text(listName, style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height( dimensionResource( R.dimen.medium_padding)))
         Text(
-            text = list.subList(0, visibleItems).joinToString(),
-            style = MaterialTheme.typography.labelMedium
+            text = annotatedString,
+            lineHeight = MaterialTheme.typography.labelMedium.lineHeight,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = dimensionResource(id = R.dimen.medium_padding))
+                .verticalScroll(rememberScrollState())
+
         )
 
-        if (list.size > 1) {
-            AnimatedVisibility(visible = !expandedState) {
-                Text(
-                    text = "...+${list.size - 1} more",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Blue,
-                    modifier = Modifier
-                        .padding(top = 6.dp)
-                        .clickable {
-                            expandedState = true
-                            visibleItems = list.size
-                        }
-                )
-            }
-
-            AnimatedVisibility(visible = expandedState) {
-                Text(
-                    text = "Show less",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Blue,
-                    modifier = Modifier
-                        .padding(top = 6.dp)
-                        .clickable {
-                            expandedState = false
-                            visibleItems = 1
-                        }
-                )
-            }
-        }
     }
 }
 

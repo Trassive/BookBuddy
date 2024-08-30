@@ -1,5 +1,6 @@
 package com.example.bookbuddy.ui.homescreen
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookbuddy.R
@@ -35,39 +36,40 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
 
     private fun getBooks(){
         viewModelScope.launch {
-            val result = runCatching {
-                bookCatalogueRepository.getCatalogue().also { previousLoadedBooks = it }
-            }.getOrElse { e ->
+            try{
+                bookCatalogueRepository.getCatalogue().collect { books ->
+                    previousLoadedBooks = previousLoadedBooks.plus(books)
+                if (_uiState.value is HomeUiState.SearchView) return@collect
+                    _uiState.update {
+                        ensureActive()
+                        HomeUiState.HomeView(
+                            carouselBooks = previousLoadedBooks.take(
+                                min(
+                                    7,
+                                    previousLoadedBooks.size
+                                )
+                            ),
+                            bookList = previousLoadedBooks.drop(
+                                min(
+                                    7,
+                                    previousLoadedBooks.size
+                                )
+                            ),
+                            isLoading = true
+                        )
+                    }
+                }
+            } catch(e: Exception) {
+                Log.d("HomeScreenViewModel", "getBooks: ${e.message} ${e.cause} ")
                 val error = if (e.isOneOf(IOException::class, CancellationException::class)) {
                     listOf(R.string.network_Error)
                 } else {
                     listOf(R.string.unknown_error)
                 }
-
                 val previousError: MutableList<Int> = (_uiState.value as? HomeUiState.Error)?.error?.toMutableList()?: mutableListOf()
-                HomeUiState.Error(error = previousError + error)
+                _uiState.update{ HomeUiState.Error(error = previousError + error) }
             }
-
-
-            if (_uiState.value is HomeUiState.SearchView) return@launch
-
-            _uiState.update {
-                when (result) {
-                    is HomeUiState.Error -> result
-                    else -> {
-                        val books = (result as? List<Book> )!!
-                        HomeUiState.HomeView(
-                            carouselBooks = books.take(7),
-                            bookList = books.drop(7),
-                            isLoading = false
-                        )
-                    }
-                }
-            }
-
-            ensureActive()
         }
-
     }
     fun toggleSearchState(){
         _uiState.update { currentState->
@@ -94,28 +96,32 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
             if(query.isNullOrEmpty()) return@launch
 
             _uiState.update {
-                (it as? HomeUiState.SearchView)?.copy(isSearching = true)?: it
+                (it as HomeUiState.SearchView).copy(isSearching = true)
             }
-            _uiState.update { currentState ->
-                try {
-                    val books = bookCatalogueRepository.getCatalogue(query)
-                    if(books.isEmpty()) throw OutOfDataException("No books found")
-                    HomeUiState.SearchView(
-                        searchText = query,
-                        bookList = books,
-                        isSearching = false
-                    )
-                } catch (e: Exception) {
-                    val currError = if (e.isOneOf(IOException::class, CancellationException::class) ) {
-                        listOf(R.string.network_Error)
-                    } else if (e is OutOfDataException){
-                        listOf(R.string.no_books_found)
-                    }else {
-                        listOf(R.string.unknown_error)
+
+            try {
+                bookCatalogueRepository.getCatalogue(query).collect{books->
+                    if(_uiState.value !is HomeUiState.SearchView) return@collect
+                    _uiState.update {
+                        HomeUiState.SearchView(
+                            searchText = query,
+                            bookList = (it as HomeUiState.SearchView).bookList.plus(books),
+                            isLoading = false,
+                            isSearching = false
+                        )
                     }
-                    val errors = ((currentState as? HomeUiState.Error)?.error?.plus(currError)) ?: currError
-                    HomeUiState.Error(error = errors)
                 }
+            } catch (e: Exception) {
+                val currError = if (e.isOneOf(IOException::class, CancellationException::class) ) {
+                    listOf(R.string.network_Error)
+                } else if (e is OutOfDataException){
+                    listOf(R.string.no_books_found)
+                }else {
+                    listOf(R.string.unknown_error)
+                }
+                val errors = ((_uiState.value as? HomeUiState.Error)?.error?.plus(currError)) ?: currError
+
+                _uiState.update { HomeUiState.Error(error = errors) }
             }
         }
     }
@@ -158,9 +164,27 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
             }
         }
     }
+    fun toggleSave(book: Book, position: Int){
+        viewModelScope.launch {
+            val updatedBook = book.copy(isSaved = !book.isSaved)
+
+            if (book.isSaved) {
+                bookCatalogueRepository.unSaveBook(book.id)
+            } else {
+                bookCatalogueRepository.saveBook(book)
+            }
+
+            _uiState.update {
+                (it as? HomeUiState.HomeView)?.copy(bookList = it.bookList.updateAt(position) { updatedBook })?:
+                (it as HomeUiState.SearchView).copy(bookList = it.bookList.updateAt(position) { updatedBook })
+            }
+
+        }
+    }
+    private fun List<Book>.updateAt(position: Int, update: Book.() -> Book): List<Book> =
+        toMutableList().apply { this[position] = this[position].update() }
 
 }
-
 
 sealed interface HomeUiState{
     data object IsLoading: HomeUiState

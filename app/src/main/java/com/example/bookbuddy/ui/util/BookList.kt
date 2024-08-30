@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,6 +51,7 @@ import com.example.compose.BookBuddyTheme
 @Composable
 fun BookList(
     books: List<Book>,
+    onToggleSave: (Int, Book) -> Unit,
     onClick: (Int)-> Unit,
     loadMore: ()-> Unit,
     modifier: Modifier,
@@ -57,7 +59,7 @@ fun BookList(
     memoryCachePolicy: CachePolicy = CachePolicy.ENABLED,
     contentPadding: PaddingValues = PaddingValues(dimensionResource(id = R.dimen.large_padding)),
 ){
-    var bottomSheetBook by remember{ mutableStateOf<Book?>(null) }
+    var bottomSheetBook by remember{ mutableStateOf<Pair<Int,Book>?>(null) }
     val lazyListState = rememberLazyListState()
     val reachedBottom: Boolean by remember {
         derivedStateOf {
@@ -76,12 +78,12 @@ fun BookList(
         modifier = modifier
             .fillMaxSize()
     ) {
-        items(items = books, key = { it.id }) { book ->
+        itemsIndexed(items = books, key = {_,it-> it.id }) { index,book ->
             BookCard(
                 book = book,
                 onClick = { onClick(book.id) },
                 onLongPress = {
-                    bottomSheetBook = book
+                    bottomSheetBook = index to book
                 },
                 diskCachePolicy = diskCachePolicy,
                 memoryCachePolicy = memoryCachePolicy,
@@ -91,9 +93,10 @@ fun BookList(
             )
         }
     }
-    bottomSheetBook?.let{book->
+    bottomSheetBook?.let{(index, book)->
         CustomBottomSheet(
             book = book,
+            onToggleSave = { onToggleSave(index, book) },
             onDismiss = { bottomSheetBook = null},
             onExpand = { onClick(book.id) }
         )
@@ -220,6 +223,7 @@ fun ListPreview(){
             modifier = Modifier,
             diskCachePolicy = CachePolicy.DISABLED,
             onClick = {},
+            onToggleSave = {_,_->},
             loadMore = {}
         )
     }

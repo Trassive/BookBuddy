@@ -2,7 +2,6 @@
 
 package com.example.bookbuddy.ui.util
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,8 +18,9 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,7 +40,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -53,7 +52,13 @@ import com.example.compose.BookBuddyTheme
 import kotlinx.coroutines.launch
 
 @Composable
-fun CustomBottomSheet(sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), book: Book,onDismiss: ()->Unit,  onExpand: (Int)->Unit){
+fun CustomBottomSheet(
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    book: Book,
+    onDismiss: () -> Unit,
+    onToggleSave: () -> Unit,
+    onExpand: () -> Unit
+){
     val coroutineScope = rememberCoroutineScope()
 
     ModalBottomSheet(
@@ -105,8 +110,9 @@ fun CustomBottomSheet(sheetState: SheetState = rememberModalBottomSheetState(ski
                 }
                 Surface{
                     BottomButtons(
-                        save = {},
-                        expand = {},
+                        isSaved = book.isSaved,
+                        onToggleSave = onToggleSave,
+                        expand = onExpand,
                         modifier = Modifier
                             .requiredHeight(60.dp)
                             .fillMaxWidth()
@@ -126,8 +132,9 @@ fun CustomBottomSheet(sheetState: SheetState = rememberModalBottomSheetState(ski
                     .align(Alignment.TopEnd)
                     .padding(dimensionResource(id = R.dimen.large_padding))
             ) {
-                Image(
+                Icon(
                     painter = painterResource(id = R.drawable.round_close_24),
+                    tint = MaterialTheme.colorScheme.onSurface,
                     contentDescription = stringResource(R.string.close),
                 )
             }
@@ -200,17 +207,20 @@ private fun BookContent(
         Text(
             text = book.description ,
             style = MaterialTheme.typography.bodyLarge,
-            maxLines = 4,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.medium_padding))
+            modifier = Modifier
+                .padding(bottom = dimensionResource(id = R.dimen.medium_padding))
+                .verticalScroll(
+                    rememberScrollState()
+                )
         )
     }
 }
 
 @Composable
 fun BottomButtons(
+    isSaved: Boolean,
     expand: () -> Unit,
-    save: () -> Unit,
+    onToggleSave: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -228,7 +238,7 @@ fun BottomButtons(
                 verticalAlignment = Alignment.CenterVertically
             ){
                 Text(
-                    text = stringResource(R.string.read_more),
+                    text = stringResource(R.string.download),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Icon(
@@ -238,11 +248,13 @@ fun BottomButtons(
             }
         }
 
-        IconButton(onClick = save,modifier = Modifier
+        IconButton(onClick = onToggleSave,modifier = Modifier
             .clip(RoundedCornerShape(24.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
             Icon(
-                painter =   painterResource(id = R.drawable.outline_bookmark_add_24),
+                painter =   painterResource(
+                    id = if(!isSaved) R.drawable.outline_bookmark_add_24 else R.drawable.round_bookmark_24
+                ),
                 contentDescription = null
             )
         }
@@ -256,8 +268,9 @@ fun BottomSheetPreview(){
         Surface(color = Color.Magenta){
             CustomBottomSheet(
                 onExpand = {},
-                onDismiss = {},
-                book = fakeData.books[0]
+                book = fakeData.books[0],
+                onToggleSave = {},
+                onDismiss = {}
             )
         }
     }

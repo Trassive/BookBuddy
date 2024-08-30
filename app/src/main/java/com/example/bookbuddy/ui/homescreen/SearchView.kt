@@ -11,18 +11,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil.request.CachePolicy
 import com.example.bookbuddy.R
 import com.example.bookbuddy.data.fakeData
+import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.ui.util.BookList
 import com.example.compose.BookBuddyTheme
 
 @Composable
 fun SearchView(
     homeUiState: HomeUiState.SearchView,
+    onToggleSave: (Int, Book) -> Unit,
     loadMore: ()->Unit,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ){
     BookList(
         books = homeUiState.bookList,
+        onToggleSave = onToggleSave,
         onClick = onClick,
         loadMore = loadMore,
         diskCachePolicy = CachePolicy.DISABLED,
@@ -40,7 +43,8 @@ fun SearchViewPreview(){
         SearchView(
             homeUiState = HomeUiState.SearchView(searchText = "", bookList = fakeData.books),
             onClick = {},
-            loadMore = {}
+            loadMore = {},
+            onToggleSave = {_,_ ->}
         )
     }
 }

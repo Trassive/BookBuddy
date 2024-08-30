@@ -1,5 +1,6 @@
 package com.example.bookbuddy.data.local.datasource
 
+import android.util.Log
 import com.example.bookbuddy.data.local.entities.BookResource
 import com.example.bookbuddy.data.local.dao.BooksDao
 import com.example.bookbuddy.data.local.entities.SavedLocator
@@ -33,17 +34,17 @@ class BookLocalDataSource @Inject constructor(private val booksDao: BooksDao) {
     suspend fun getBook(id: Int): BookWithResources? {
         val savedBook = booksDao.getBook(id)
         val resources = booksDao.getResource(id)
+        Log.d("BookLocalDataSource", "getBook: $savedBook $resources")
         return if(savedBook == null) {
             null
         } else {
             BookWithResources(book = savedBook, resource = resources!!)
+
         }
     }
     suspend fun deleteBook(id: Int){
         booksDao.deleteBook(id)
     }
-    suspend fun isDownloaded(id: Int): Boolean{
-        return booksDao.getResource(id)?.downloadPath != null
-    }
+
 }
 

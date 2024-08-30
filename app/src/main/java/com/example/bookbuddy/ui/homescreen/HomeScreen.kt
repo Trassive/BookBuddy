@@ -45,7 +45,10 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
         if(errorScreen){
             LottieAnimationComposable(R.raw.empty,modifier = Modifier.fillMaxSize())
         }
-        Box(Modifier.padding(top = innerPadding.calculateTopPadding()).fillMaxSize()) {
+        Box(
+            Modifier
+                .padding(top = innerPadding.calculateTopPadding())
+                .fillMaxSize()) {
             when (val state = homeScreenUiState) {
                 is HomeUiState.IsLoading -> {
                     LottieAnimationComposable(R.raw.loading, modifier = Modifier.fillMaxSize())
@@ -56,6 +59,7 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
                         homeUiState = state,
                         loadMore = viewModel::updateBooks,
                         onClick = onClick,
+                        onToggleSave = {position,book-> viewModel.toggleSave(position = position, book = book) },
                         modifier = Modifier
                             .fillMaxSize()
                     )
@@ -66,6 +70,7 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
                     SearchView(
                         homeUiState = state,
                         loadMore = viewModel::updateBooks,
+                        onToggleSave = {position,book-> viewModel.toggleSave(position = position, book = book) },
                         onClick = onClick,
                         modifier = Modifier
                             .fillMaxSize()

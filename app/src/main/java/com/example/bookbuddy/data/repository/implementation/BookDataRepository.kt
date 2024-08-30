@@ -41,7 +41,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
-import kotlin.time.measureTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookDataRepository @Inject constructor(
@@ -52,26 +51,23 @@ class BookDataRepository @Inject constructor(
 ): BookCatalogueRepository, BookDetailsRepository, OfflineBookRepository, ReadiumRepository {
     private var nextHomePageLink: String? = null
     private var nextSearchPageLink: String? = null
-    override suspend fun getCatalogue(query: String?): List<Book> = withContext(dispatcherIO){
-        val books: List<RemoteBook>
-        val time1 = measureTime{
-             books = bookRemoteDataSource.getBooks((gutenbergQuery(search = query)))
-                .also {
-                    if(query.isNullOrEmpty())  nextHomePageLink = it.next
-                    else nextSearchPageLink = it.next
-                }.books
-            ensureActive()
+    override suspend fun getCatalogue(query: String?): Flow<List<Book>> = withContext(dispatcherIO){
+        val books = bookRemoteDataSource.getBooks((gutenbergQuery(search = query)))
+            .also {
+                if(query.isNullOrEmpty())  nextHomePageLink = it.next
+                else nextSearchPageLink = it.next
+            }.books
+        Log.d("BookDataRepository", "getCatalogue: ${books.size}")
+        return@withContext flow {
+            books.chunked(15).forEach { chunk ->
+                Log.d("BookDataRepository", "getCatalogue: ${chunk.size}")
+                emit(mergeMetaData(chunk))
+            }
         }
-        val result: List<Book>
-        val time = measureTime{  result = mergeMetaData(books) }
-        Log.d("BookDataRepository", "get time $time1 merge: Time Taken: $time")
-        return@withContext result
-        }
+    }
 
 
     override suspend fun updateCatalogue(update: Update): Flow<List<Book>> = withContext(dispatcherIO) {
-
-
         val updatePageLink = when(update){
             Update.HOME -> ::nextHomePageLink
             Update.SEARCH -> ::nextSearchPageLink
@@ -81,11 +77,11 @@ class BookDataRepository @Inject constructor(
             while(true){
                 if (updatePageLink.get() == null) throw OutOfDataException(message = "No Data to update")
 
-                val books = bookRemoteDataSource.getBooks(updatePageLink.get()!!).also {data->
+                bookRemoteDataSource.getBooks(updatePageLink.get()!!).also {data->
                     updatePageLink.set(data.next)
-                }.books
-                Log.d("BookDataRepository", "updateCatalogue: ${books.size}")
-                emit(mergeMetaData(books))
+                }.books.chunked(15).forEach { chunk ->
+                    emit(mergeMetaData(chunk))
+                }
             }
         }
     }
@@ -102,8 +98,7 @@ class BookDataRepository @Inject constructor(
         }
 
         val bookLocal = bookLocalDeferred.await()
-
-
+        Log.d("BookDataRepository", "getBookDetails: $bookLocal")
         return@coroutineScope bookLocal?.constructBook() ?: with(bookRemoteDeferred.await()){
            this[0]
         }
@@ -122,6 +117,7 @@ class BookDataRepository @Inject constructor(
     override suspend fun downloadBook(book: Book): Flow<DownloadState> {
         return withContext(dispatcherIO){
             if (fileHandler.fileExists(book.id.toString())) return@withContext flow { DownloadState.Failed(InvalidRequestException("File Already Exists")) }
+            Log.d("BookDataRepository", "downloadBook: ${book.downloadLink}")
             val response = bookRemoteDataSource.downloadBooks(book.downloadLink)
             return@withContext fileHandler.saveFile(response = response, fileName = book.id.toString())
                 .distinctUntilChanged()

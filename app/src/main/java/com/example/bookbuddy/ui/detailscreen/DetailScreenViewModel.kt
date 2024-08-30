@@ -11,6 +11,7 @@ import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.model.DownloadState
 import com.example.bookbuddy.navigation.LeafScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,8 +39,13 @@ class DetailScreenViewModel @Inject constructor(
         viewModelScope.launch{
             _uiState.update {
                 try {
-
-                    DetailScreenState.DetailView(book = detailsRepository.getBookDetails(id))
+                    DetailScreenState.DetailView(book = detailsRepository.getBookDetails(id)).also{
+                        if(it.book.isDownloaded){
+                            _downloadState.update {
+                                DownloadState.Finished
+                            }
+                        }
+                    }
                 } catch (e: Exception) {
                     val error: Int = if(e is IllegalArgumentException){
                         R.string.illegal_arguement
@@ -51,19 +57,21 @@ class DetailScreenViewModel @Inject constructor(
                 }
             }
             Log.d("DetailScreenViewModel", "getBook: ${_uiState.value} $id")
-
         }
     }
 
     fun downloadBook(){
+        _downloadState.update {
+            DownloadState.Downloading(0)
+        }
         viewModelScope.launch {
-            detailsRepository.downloadBook((uiState.value as? DetailScreenState.DetailView)!!.book).collectLatest { state->
-                if(state is DownloadState.Finished || state is DownloadState.Failed){
-                    getBook()
-                }
+            detailsRepository.downloadBook((uiState.value as DetailScreenState.DetailView).book).collectLatest { state->
                 _downloadState.update {
                     state
                 }
+                delay(20)
+                Log.d("DownloadButton", "ViewModel DownloadState: ${downloadState.value}")
+                if(state is DownloadState.Finished || state is DownloadState.Failed) getBook()
             }
         }
     }
@@ -72,6 +80,10 @@ class DetailScreenViewModel @Inject constructor(
             with((uiState.value as? DetailScreenState.DetailView)!!.book){
                 if (this.isDownloaded) {
                     detailsRepository.deleteBook(this.id)
+                    _uiState.update {
+                        DetailScreenState.DetailView(this.copy(isDownloaded = false, isSaved = false))
+                    }
+                    _downloadState.update { DownloadState.Idle }
                 } else if (this.isSaved) {
                     detailsRepository.unSaveBook(this.id)
                 } else{

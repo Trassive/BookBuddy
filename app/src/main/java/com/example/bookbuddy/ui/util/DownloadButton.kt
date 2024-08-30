@@ -64,8 +64,10 @@ fun DownloadButton(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ){
+            Log.d("DownloadButton", "DownloadState: $downloadState")
             when (downloadState) {
                 is DownloadState.Downloading -> {
+
                     Text(
                         text = stringResource(R.string.downloading),
                         modifier = Modifier
@@ -103,13 +105,13 @@ fun DownloadButton(
 
                 is DownloadState.Finished -> {
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = dimensionResource(id = R.dimen.medium_padding))){
+                        Text(
+                            text = stringResource(R.string.start_reading)
+                        )
                         Icon(
                             painter = painterResource(id = R.drawable.round_menu_book_24),
                             contentDescription = null,
-                            modifier = Modifier.padding(end = dimensionResource(id = R.dimen.medium_padding))
-                        )
-                        Text(
-                            text = stringResource(R.string.start_reading)
+                            modifier = Modifier.padding(start = dimensionResource(id = R.dimen.medium_padding))
                         )
                     }
                 }

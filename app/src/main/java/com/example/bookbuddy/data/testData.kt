@@ -6,7 +6,7 @@ import com.example.bookbuddy.model.LibraryBook
 
 val string: ()->String = {
     var string = "Epic high fantasy trilogy following the journey of Frodo Baggins"
-    repeat(5){
+    repeat(2){
         string = string.plus(string)
     }
     string
@@ -16,7 +16,7 @@ object fakeData {
             Book(
                 id = 1,
                 title = "The Lord of the Rings",
-                categories = listOf("Fantasy", "Adventure","Fantasy","Adventure","Adventure"),
+                categories = listOf("Fantasy", "Adventure","Fantasy","Adventure","Adventure" ),
                 authors = listOf("J.R.R. Tolkien","J.R.R. Tolkien"),
                 coverImage = "https://example.com/lotr.jpg",
                 description = string(),

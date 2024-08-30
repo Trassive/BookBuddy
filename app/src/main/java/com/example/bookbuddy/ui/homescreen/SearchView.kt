@@ -13,6 +13,7 @@ import com.example.bookbuddy.R
 import com.example.bookbuddy.data.fakeData
 import com.example.bookbuddy.model.Book
 import com.example.bookbuddy.ui.util.BookList
+import com.example.bookbuddy.ui.util.LottieAnimationComposable
 import com.example.compose.BookBuddyTheme
 
 @Composable
@@ -23,18 +24,24 @@ fun SearchView(
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ){
-    BookList(
-        books = homeUiState.bookList,
-        onToggleSave = onToggleSave,
-        onClick = onClick,
-        loadMore = loadMore,
-        diskCachePolicy = CachePolicy.DISABLED,
-        memoryCachePolicy = CachePolicy.ENABLED,
-        contentPadding = PaddingValues(dimensionResource(id = R.dimen.large_padding)),
-        modifier = modifier
-            .background(Color(0xD3FFDEB9))
-            .fillMaxSize()
-    )
+    if(homeUiState.isSearching){
+        LottieAnimationComposable(R.raw.loading, modifier = Modifier.fillMaxSize())
+    } else {
+        BookList(
+            books = homeUiState.bookList,
+            isLoading = homeUiState.isLoading,
+            onToggleSave = onToggleSave,
+            onClick = onClick,
+            loadMore = loadMore,
+            diskCachePolicy = CachePolicy.DISABLED,
+            memoryCachePolicy = CachePolicy.ENABLED,
+            contentPadding = PaddingValues(dimensionResource(id = R.dimen.large_padding)),
+            modifier = modifier
+                .background(Color(0xD3FFDEB9))
+                .fillMaxSize()
+        )
+    }
+
 }
 @Preview(showBackground = true)
 @Composable

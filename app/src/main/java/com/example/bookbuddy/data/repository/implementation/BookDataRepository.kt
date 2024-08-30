@@ -54,7 +54,7 @@ class BookDataRepository @Inject constructor(
     override suspend fun getCatalogue(query: String?): Flow<List<Book>> = withContext(dispatcherIO){
         val books = bookRemoteDataSource.getBooks((gutenbergQuery(search = query)))
             .also {
-                if(query.isNullOrEmpty())  nextHomePageLink = it.next
+                if(query.isNullOrBlank())  nextHomePageLink = it.next
                 else nextSearchPageLink = it.next
             }.books
         Log.d("BookDataRepository", "getCatalogue: ${books.size}")
@@ -92,15 +92,19 @@ class BookDataRepository @Inject constructor(
         }
 
         val bookRemoteDeferred = async(dispatcherIO) {
-            val book = bookRemoteDataSource.getBooks(mapOf("ids" to id.toString())).books
-            ensureActive()
-            mergeMetaData(book)
+            try{
+                val book = bookRemoteDataSource.getBooks(mapOf("ids" to id.toString())).books
+                ensureActive()
+                mergeMetaData(book)
+            } catch (e: Exception){
+                null
+            }
         }
 
         val bookLocal = bookLocalDeferred.await()
         Log.d("BookDataRepository", "getBookDetails: $bookLocal")
         return@coroutineScope bookLocal?.constructBook() ?: with(bookRemoteDeferred.await()){
-           this[0]
+           this?.get(0)?: throw Exception()
         }
     }
 

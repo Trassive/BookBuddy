@@ -33,9 +33,10 @@ fun EbookReaderApp(navController: NavHostController, modifier: Modifier = Modifi
                 },
                 selectedItem = currentScreen?: RouteScreen.Home
             )
-        }
+        },
     ) {innerPadding->
         Box(modifier = modifier
+
             .padding(bottom = innerPadding.calculateBottomPadding())
             .fillMaxSize()
 

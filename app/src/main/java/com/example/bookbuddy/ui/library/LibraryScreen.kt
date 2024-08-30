@@ -1,7 +1,6 @@
 
 package com.example.bookbuddy.ui.library
 
-import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
@@ -33,9 +32,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,6 +46,7 @@ import com.example.bookbuddy.model.LibraryBook
 import com.example.bookbuddy.ui.util.CustomTopBar
 import com.example.bookbuddy.ui.util.LibraryBookList
 import com.example.compose.BookBuddyTheme
+import com.example.compose.libraryContainer
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +66,7 @@ fun LibraryScreen(viewModel: LibraryScreenViewModel, onClick: (Int) -> Unit) {
             downloadedLibraryBooks = state.downloadedTabBooks,
             onClick = onClick,
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(top = innerPadding.calculateTopPadding())
                 .fillMaxSize()
         )
     }
@@ -83,7 +83,7 @@ fun CustomTabs(
 
     val list = listOf("Saved", "Download")
 
-    Column(Modifier.background(Color(0xF0FFFFF0))){
+    Column(modifier.background(MaterialTheme.colorScheme.libraryContainer).fillMaxSize()) {
 
         TabRow(
             selectedTabIndex = pagerState.currentPage,
@@ -101,9 +101,9 @@ fun CustomTabs(
                 val isSelected = pagerState.currentPage == index
                 val transition = updateTransition(isSelected, label = "TabTransition")
 
-                val textColor by transition.animateColor(
+                val alpha by transition.animateFloat(
                     label = "TextColor",
-                    targetValueByState = { if (it) Color(0xFF5D4037) else Color(0xFD8D6E63) }
+                    targetValueByState = { if (it) 1f else 0.8f }
                 )
 
                 val scale by transition.animateFloat(
@@ -122,7 +122,7 @@ fun CustomTabs(
                         Text(
                             text = text,
                             style = MaterialTheme.typography.titleSmall,
-                            color = textColor
+                            modifier = Modifier.alpha(alpha)
                         )
                     },
                     modifier = Modifier
@@ -162,18 +162,16 @@ fun CustomTabIndicator(tabPositions: List<TabPosition>,pagerState: PagerState){
     val indicatorRight by transition.animateDp(
         transitionSpec = {
             if(1 isTransitioningTo 0){
-                spring(stiffness = Spring.StiffnessMedium)
+                spring(stiffness = Spring.StiffnessVeryLow)
             } else{
-                spring(stiffness =   Spring.StiffnessVeryLow)
+                spring(stiffness =   Spring.StiffnessMedium)
             }
         },
         label = "Indicator right"
     ) { page ->
         tabPositions[page].right
     }
-    val color by transition.animateColor(label = "Border color") { page ->
-        if (page == 0)  MaterialTheme.colorScheme.inversePrimary else MaterialTheme .colorScheme.primary
-    }
+
     Box(
         Modifier
             .fillMaxSize()
@@ -183,7 +181,7 @@ fun CustomTabIndicator(tabPositions: List<TabPosition>,pagerState: PagerState){
             .padding(4.dp)
             .fillMaxSize()
             .border(
-                BorderStroke(2.dp, color),
+                BorderStroke(2.dp, MaterialTheme .colorScheme.primary),
                 RoundedCornerShape(40.dp)
             )
     )

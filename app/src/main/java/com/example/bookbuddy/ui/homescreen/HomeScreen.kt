@@ -40,11 +40,7 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
 
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {innerPadding ->
-
-        var errorScreen by remember{mutableStateOf(true)}
-        if(errorScreen){
-            LottieAnimationComposable(R.raw.empty,modifier = Modifier.fillMaxSize())
-        }
+        var error by remember{ mutableStateOf(true) }
         Box(
             Modifier
                 .padding(top = innerPadding.calculateTopPadding())
@@ -55,6 +51,7 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
                 }
 
                 is HomeUiState.HomeView -> {
+                    error = false
                     HomeViewContent(
                         homeUiState = state,
                         loadMore = viewModel::updateBooks,
@@ -63,10 +60,11 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
                         modifier = Modifier
                             .fillMaxSize()
                     )
-                    errorScreen = false
+
                 }
 
                 is HomeUiState.SearchView -> {
+                    error = false
                     SearchView(
                         homeUiState = state,
                         loadMore = viewModel::updateBooks,
@@ -75,12 +73,17 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
                         modifier = Modifier
                             .fillMaxSize()
                     )
+
                 }
 
                 is HomeUiState.Error -> {
+                    if(error){
+                        LottieAnimationComposable(R.raw.empty, modifier = Modifier.fillMaxSize())
+                    }
                     if (state.error.isNotEmpty()) {
+
                         HomeScreenSnackBar(
-                            messageId = state.error[0],
+                            state = state,
                             snackbarHostState = snackbarHostState,
                             onDismiss = viewModel::messageDismissed,
                             onRetry = viewModel::retry
@@ -94,13 +97,17 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
 
 @Composable
 private fun HomeScreenSnackBar(
-    messageId: Int,
+    state: HomeUiState.Error,
     snackbarHostState: SnackbarHostState,
     onDismiss: () -> Unit,
     onRetry: () -> Unit
 ) {
-    val message = stringResource(messageId)
+    var messageId by remember {
+        mutableStateOf<Int?>(state.error[0])
+    }
+    val message = messageId?.run{ stringResource(id = this)}
     LaunchedEffect(key1 = message) {
+        if(message == null) return@LaunchedEffect
         val action = snackbarHostState.showSnackbar(
             message = message,
             actionLabel = "Retry",
@@ -108,7 +115,10 @@ private fun HomeScreenSnackBar(
             duration = SnackbarDuration.Short
         )
         when (action) {
-            SnackbarResult.Dismissed -> onDismiss()
+            SnackbarResult.Dismissed -> {
+                messageId = null
+                onDismiss()
+            }
             SnackbarResult.ActionPerformed -> onRetry()
         }
     }

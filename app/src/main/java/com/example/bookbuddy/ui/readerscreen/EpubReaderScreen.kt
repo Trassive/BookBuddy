@@ -7,6 +7,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -25,11 +28,11 @@ fun ReaderScreen(viewModel: ReaderViewModel){
     Scaffold(
         topBar = {
             CustomTopBar(
-                topBarTitle = ""
+                topBarTitle = " "
             )
         }
     ) {innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)){
+        Box(modifier = Modifier.padding(top = innerPadding.calculateTopPadding())){
             when(uiState){
                 ReaderUiState.IsLoading -> {
                     LottieAnimationComposable(
@@ -38,7 +41,7 @@ fun ReaderScreen(viewModel: ReaderViewModel){
                     )
                 }
                 is ReaderUiState.Success -> {
-                    ReaderContent((uiState as ReaderUiState.Success).fragment)
+                    ReaderContent((uiState as ReaderUiState.Success).fragment, viewModel::onViewInflated)
                 }
                 is ReaderUiState.Error -> {
                     LottieAnimationComposable(
@@ -51,7 +54,8 @@ fun ReaderScreen(viewModel: ReaderViewModel){
     }
 }
 @Composable
-fun ReaderContent(fragment: EpubNavigatorFragment){
+fun ReaderContent(fragment: EpubNavigatorFragment, onViewInflated: ()->Unit = {}){
+    var isViewInflated by remember { mutableStateOf(false) }
     AndroidView(
         factory = {context->
             FragmentContainerView(context).apply {
@@ -61,6 +65,12 @@ fun ReaderContent(fragment: EpubNavigatorFragment){
                 fragmentManager.beginTransaction()
                     .replace(id,fragment)
                     .commit()
+            }
+        },
+        update = {
+            if(!isViewInflated){
+                onViewInflated()
+                isViewInflated = true
             }
         }
     )

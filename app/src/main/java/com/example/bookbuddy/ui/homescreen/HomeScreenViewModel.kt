@@ -68,6 +68,7 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
                 }
                 val previousError: MutableList<Int> = (_uiState.value as? HomeUiState.Error)?.error?.toMutableList()?: mutableListOf()
                 _uiState.update{ HomeUiState.Error(error = previousError + error) }
+                Log.d("HomeScreenViewModel", "getBooks: ${_uiState.value} ")
             }
         }
     }
@@ -131,6 +132,7 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
         }
     }
     fun retry(){
+        messageDismissed()
         if(retryJob?.isActive!= true) return
         else retryJob = viewModelScope.launch {
             getBooks()
@@ -143,15 +145,18 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
     }
 
     fun updateBooks(){
+        var isHome = false
         viewModelScope.launch {
             _uiState.update {currentState->
-                (currentState as? HomeUiState.HomeView)?.copy(isLoading = true) ?:
-                (currentState as HomeUiState.SearchView).copy(isLoading = true)
+                (currentState as? HomeUiState.HomeView)?.copy(isLoading = true).also{ isHome = true} ?:
+                (currentState as HomeUiState.SearchView).copy(isLoading = true).also{ isHome = false}
             }
         }
         viewModelScope.launch {
             val books = try{
-                bookCatalogueRepository.updateCatalogue(Update.SEARCH).first()
+                bookCatalogueRepository.updateCatalogue(
+                    if(isHome) Update.HOME else Update.SEARCH
+                ).first()
             }catch (e:Exception){
                 listOf()
             }

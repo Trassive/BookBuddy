@@ -41,8 +41,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.bookbuddy.R
@@ -54,13 +56,23 @@ private val EMPTY = {}
 fun CustomTopBar(
     topBarTitle: String,
     modifier: Modifier = Modifier,
+    style: TextStyle = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
     onArrowClick: () -> Unit = EMPTY,
     actions: @Composable (RowScope.() -> Unit) = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
     ){
     CenterAlignedTopAppBar(
         title = {
-            Text( text = topBarTitle, style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold))
+            Text(
+                text = topBarTitle,
+                style = style,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.large_padding),
+                    vertical = dimensionResource(id = R.dimen.medium_padding)
+                )
+            )
         },
         navigationIcon = {
             if(onArrowClick != EMPTY){
@@ -155,7 +167,8 @@ fun HomeScreenTopBar(
                 onValueChange = onValueChange,
                 onCloseClick = onStateToggle,
                 onSearch = onSearchClicked,
-                modifier = Modifier.windowInsetsPadding(insets = WindowInsets.statusBars)
+                modifier = Modifier
+                    .windowInsetsPadding(insets = WindowInsets.statusBars)
                     .padding(dimensionResource(id = R.dimen.medium_padding))
             )
         } else{

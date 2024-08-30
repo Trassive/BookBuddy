@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -55,6 +56,7 @@ fun TableOfContentScreen(viewModel: ContentViewModel, goTo: (Int, String?) -> Un
         topBar = {
             CustomTopBar(
                 topBarTitle = (state as? TableOfContentUiState.Loaded)?.title?:"",
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 onArrowClick = onArrow
             )
         },
@@ -74,13 +76,14 @@ fun TableOfContentScreen(viewModel: ContentViewModel, goTo: (Int, String?) -> Un
             }
         }
     ) {innerPadding->
+
         when(state){
             TableOfContentUiState.IsLoading -> {
                 LottieAnimationComposable(
                     id = R.raw.loading,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding)
+                        .padding(top = innerPadding.calculateTopPadding())
                         .padding(dimensionResource(id = R.dimen.large_padding))
                 )
             }
@@ -89,7 +92,7 @@ fun TableOfContentScreen(viewModel: ContentViewModel, goTo: (Int, String?) -> Un
                     tableOfContent = (state as TableOfContentUiState.Loaded).tableOfContent,
                     goTo = { link -> goTo((state as TableOfContentUiState.Loaded).id ,link.String()) },
                     modifier = Modifier
-                        .padding(innerPadding)
+                        .padding(top = innerPadding.calculateTopPadding())
                         .fillMaxSize()
                 )
             }
@@ -98,7 +101,7 @@ fun TableOfContentScreen(viewModel: ContentViewModel, goTo: (Int, String?) -> Un
                     id = R.raw.empty,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding)
+                        .padding(top = innerPadding.calculateTopPadding())
                         .padding(dimensionResource(id = R.dimen.large_padding))
                 )
             }
@@ -107,6 +110,7 @@ fun TableOfContentScreen(viewModel: ContentViewModel, goTo: (Int, String?) -> Un
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Content(tableOfContent: List<Link>, goTo: (Link)-> Unit, modifier: Modifier = Modifier){
         LazyColumn(modifier = modifier
@@ -114,7 +118,14 @@ fun Content(tableOfContent: List<Link>, goTo: (Link)-> Unit, modifier: Modifier 
             .padding(dimensionResource(id = R.dimen.large_padding)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.medium_padding))
         ) {
-
+            stickyHeader {
+                Text(
+                    text = stringResource(R.string.content),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding( horizontal = dimensionResource(id = R.dimen.medium_padding), vertical = dimensionResource(id = R.dimen.large_padding))
+                )
+            }
             itemsIndexed(items = tableOfContent.filter { it.title!=null }, key = { _, link->link.href}){ index, link->
                 val collapsed = remember{ if(link.children.isNotEmpty())mutableStateOf(false) else null }
                 val sectionLambda: ()->Unit = if(collapsed!=null) { { collapsed.value = !collapsed.value } } else { { goTo(link) } }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -101,7 +102,7 @@ fun DetailScreen(detailScreenViewModel: DetailScreenViewModel, onArrow: () -> Un
     ){innerPadding->
         when (val state = detailScreenState) {
             is DetailScreenState.Loading -> {
-                LottieAnimationComposable(R.raw.empty, modifier = Modifier
+                LottieAnimationComposable(R.raw.loading, modifier = Modifier
                     .padding(innerPadding.calculateTopPadding())
                     .fillMaxSize())
             }
@@ -156,10 +157,12 @@ fun DetailView(
                 Surface(
                     shape = MaterialTheme.shapes.large,
                     shadowElevation = 8.dp,
+                    color = Color.Transparent,
                     modifier = Modifier
                         .align(Alignment.Center)
                         .width(maxWidth * 0.4f)
                         .aspectRatio(2 / 3f)
+                        .wrapContentSize()
                 ) {
                     CoilImage(
                         id = detailViewState.book.id,

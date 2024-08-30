@@ -16,6 +16,7 @@ class ConfigurationsRepository(private val datastore: DataStore<Preferences>){
     companion object{
         val IS_DARK_THEME = booleanPreferencesKey("is_dark_theme")
         val FONT_SIZE = intPreferencesKey("font_size")
+        val IS_SCROLL_ENABLED = booleanPreferencesKey("is_scroll_enabled")
     }
     val fontSize: Flow<Int> = datastore.data.catch {
         if(it is IOException){
@@ -36,10 +37,24 @@ class ConfigurationsRepository(private val datastore: DataStore<Preferences>){
     }.map {preferences->
         preferences[IS_DARK_THEME]?:false
     }
+    val isScrollEnabled: Flow<Boolean> = datastore.data.catch {
+        if(it is IOException){
+            emit(emptyPreferences())
+        } else{
+            throw it
+        }
+    }.map {preferences->
+        preferences[IS_SCROLL_ENABLED]?:false
+    }
 
     suspend fun updateFontSize(fontSize: Int){
         datastore.edit{preferences->
             preferences[FONT_SIZE] = fontSize
+        }
+    }
+    suspend fun updateScroll(boolean: Boolean){
+        datastore.edit{preferences->
+            preferences[IS_SCROLL_ENABLED] = boolean
         }
     }
 

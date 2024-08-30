@@ -2,17 +2,14 @@
 
 package com.example.bookbuddy.navigation
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.example.bookbuddy.R
 import com.example.bookbuddy.ui.detailscreen.DetailScreen
 import com.example.bookbuddy.ui.detailscreen.DetailScreenViewModel
 import com.example.bookbuddy.ui.homescreen.HomeScreen
@@ -21,9 +18,10 @@ import com.example.bookbuddy.ui.library.LibraryScreen
 import com.example.bookbuddy.ui.library.LibraryScreenViewModel
 import com.example.bookbuddy.ui.readerscreen.ReaderScreen
 import com.example.bookbuddy.ui.readerscreen.ReaderViewModel
+import com.example.bookbuddy.ui.setting.SettingsScreen
+import com.example.bookbuddy.ui.setting.SettingsViewModel
 import com.example.bookbuddy.ui.tableofcontent.ContentViewModel
 import com.example.bookbuddy.ui.tableofcontent.TableOfContentScreen
-import com.example.bookbuddy.ui.util.LottieAnimationComposable
 
 
 @Composable
@@ -66,10 +64,12 @@ fun NavGraphBuilder.addLibraryRoute(navController: NavHostController){
 fun NavGraphBuilder.addSettingsRoute(navController: NavHostController){
     navigation<RouteScreen.Settings>(startDestination = LeafScreen.Settings){
         composable<LeafScreen.Settings>{
-            LottieAnimationComposable(id = R.raw.loading2, modifier = Modifier.fillMaxSize())
+            val viewmodel = hiltViewModel<SettingsViewModel>()
+            SettingsScreen(viewmodel = viewmodel)
         }
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.commonScreen(navController: NavHostController){
     composable<LeafScreen.TableOfContent>{ 
         val viewModel = hiltViewModel<ContentViewModel>()

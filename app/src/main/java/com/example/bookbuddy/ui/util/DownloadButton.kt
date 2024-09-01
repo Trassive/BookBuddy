@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -71,14 +72,14 @@ fun DownloadButton(
                     Text(
                         text = stringResource(R.string.downloading),
                         modifier = Modifier
-                            .align(Alignment.CenterVertically)
                             .padding(end = dimensionResource(id = R.dimen.medium_padding))
                     )
-                    Box(Modifier.fillMaxHeight()){
+                    Box(modifier = Modifier.fillMaxHeight().aspectRatio(1f)){
                         val progress = downloadState.progress.toFloat()
                         CircularProgressIndicator(
                             progress = { progress/100f},
                             color = Color(0xFFFECE97),
+                            modifier = Modifier.fillMaxHeight().aspectRatio(1f)
                         )
                         Text(
                             text = stringResource(R.string.progress, progress.toInt()),
@@ -154,12 +155,15 @@ fun ButtonPreview(){
             downloadState = downloadState,
             downloaded = downloaded,
             onDownloadClick = { triggerDownload = true },
-            afterDownloadClick = {}
+            afterDownloadClick = {},
+            modifier = Modifier.padding(horizontal = 100.dp)
         )
     }
 }
+
 private fun downloadBook(): Flow<DownloadState> = flow {
     emit(DownloadState.Downloading(0))
+    delay(2000)
     for (i in 1..100){
         delay(100)
         emit(DownloadState.Downloading(i))

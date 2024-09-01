@@ -89,6 +89,9 @@ fun NavGraphBuilder.commonScreen(navController: NavHostController){
     }
     composable<LeafScreen.Reader>{   
         val viewModel = hiltViewModel<ReaderViewModel>()
-        ReaderScreen(viewModel = viewModel)
+        ReaderScreen(
+            viewModel = viewModel,
+            onClick = {id -> navController.navigate(LeafScreen.TableOfContent(id))}
+        )
     }
 }

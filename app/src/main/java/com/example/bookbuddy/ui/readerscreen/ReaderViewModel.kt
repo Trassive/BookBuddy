@@ -31,11 +31,12 @@ import javax.inject.Inject
 @HiltViewModel
 class ReaderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    val containerId: Int,
     private val publicationProvider: PublicationProvider,
     private val readiumRepository: ReadiumRepository,
     private val configurationsRepository: ConfigurationsRepository
 ): ViewModel() {
-    private val id: Int = savedStateHandle.toRoute<LeafScreen.Reader>().id
+    val id: Int = savedStateHandle.toRoute<LeafScreen.Reader>().id
     private val _uiState = MutableStateFlow<ReaderUiState>(ReaderUiState.IsLoading)
     val uiState = _uiState.asStateFlow()
     private lateinit var factory: FragmentFactory
@@ -81,6 +82,7 @@ class ReaderViewModel @Inject constructor(
 
         viewModelScope.launch{
             val fragment = (_uiState.value as? ReaderUiState.Success)?.fragment ?: return@launch
+
             fragment.lifecycle.withStarted {
                 val boolean = fragment.go(link = Link(url), animated = true)
                 Log.d("ReaderViewModel", "onViewInflated: $boolean")

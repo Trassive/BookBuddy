@@ -1,17 +1,20 @@
 package com.example.bookbuddy.ui.readerscreen
 
-import android.view.View
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
@@ -23,17 +26,21 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderScreen(viewModel: ReaderViewModel){
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+fun ReaderScreen(viewModel: ReaderViewModel, onClick: (Int) -> Unit) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             CustomTopBar(
-                topBarTitle = " "
+                topBarTitle = (state as? ReaderUiState.Success)?.bookTitle?:"",
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                onArrowClick = {
+                    onClick(viewModel.id)
+                }
             )
         }
     ) {innerPadding ->
         Box(modifier = Modifier.padding(top = innerPadding.calculateTopPadding())){
-            when(uiState){
+            when(state){
                 ReaderUiState.IsLoading -> {
                     LottieAnimationComposable(
                         id = R.raw.loading,
@@ -41,7 +48,11 @@ fun ReaderScreen(viewModel: ReaderViewModel){
                     )
                 }
                 is ReaderUiState.Success -> {
-                    ReaderContent((uiState as ReaderUiState.Success).fragment, viewModel::onViewInflated)
+                    ReaderContent(
+                        fragment = (state as ReaderUiState.Success).fragment,
+                        onViewInflated = viewModel::onViewInflated,
+                        containerId = viewModel.containerId
+                    )
                 }
                 is ReaderUiState.Error -> {
                     LottieAnimationComposable(
@@ -54,13 +65,22 @@ fun ReaderScreen(viewModel: ReaderViewModel){
     }
 }
 @Composable
-fun ReaderContent(fragment: EpubNavigatorFragment, onViewInflated: ()->Unit = {}){
+fun ReaderContent(fragment: EpubNavigatorFragment, onViewInflated: ()->Unit, containerId: Int){
     var isViewInflated by remember { mutableStateOf(false) }
+    val fragmentManager = (LocalContext.current as FragmentActivity).supportFragmentManager
+
+    DisposableEffect(fragment) {
+        onDispose {
+            val existingFragment = fragmentManager.findFragmentById(containerId)
+            if(existingFragment != null ){
+                fragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
+            }
+        }
+    }
     AndroidView(
         factory = {context->
             FragmentContainerView(context).apply {
-                id = View.generateViewId()
-                val fragmentManager = (context as FragmentActivity).supportFragmentManager
+                id = containerId
 
                 fragmentManager.beginTransaction()
                     .replace(id,fragment)
@@ -74,5 +94,6 @@ fun ReaderContent(fragment: EpubNavigatorFragment, onViewInflated: ()->Unit = {}
             }
         }
     )
+
 }
 

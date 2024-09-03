@@ -11,7 +11,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.bookbuddy.ui.EbookReaderApp
 import com.example.compose.BookBuddyTheme
 import dagger.hilt.android.AndroidEntryPoint
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
 
 @AndroidEntryPoint
 class  MainActivity : FragmentActivity() {

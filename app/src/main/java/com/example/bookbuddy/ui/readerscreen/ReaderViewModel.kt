@@ -1,6 +1,5 @@
 package com.example.bookbuddy.ui.readerscreen
 
-import android.util.Log
 import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

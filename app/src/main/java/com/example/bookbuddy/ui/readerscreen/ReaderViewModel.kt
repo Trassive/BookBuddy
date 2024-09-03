@@ -5,7 +5,6 @@ import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.withStarted
 import androidx.navigation.toRoute
 import com.example.bookbuddy.data.readium.PublicationProvider
 import com.example.bookbuddy.data.repository.implementation.ConfigurationsRepository
@@ -20,6 +19,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
@@ -31,7 +31,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ReaderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    val containerId: Int,
     private val publicationProvider: PublicationProvider,
     private val readiumRepository: ReadiumRepository,
     private val configurationsRepository: ConfigurationsRepository
@@ -39,21 +38,31 @@ class ReaderViewModel @Inject constructor(
     val id: Int = savedStateHandle.toRoute<LeafScreen.Reader>().id
     private val _uiState = MutableStateFlow<ReaderUiState>(ReaderUiState.IsLoading)
     val uiState = _uiState.asStateFlow()
-    private lateinit var factory: FragmentFactory
-    private var link: String? = null
     init{
         savedStateHandle.toRoute<LeafScreen.Reader>().run{
-            link = this.url
-            loadBook(this.id)
+            val url = this.url?.run{ Url(this) }
+            loadBook(this.id, url)
         }
     }
-    private fun loadBook(id: Int){
+    @OptIn(DelicateReadiumApi::class)
+    private fun loadBook(id: Int, url: Url?){
         viewModelScope.launch {
             val publication = publicationProvider(readiumRepository.getBookUrl(id))
+            val initialLocator = try{
+                publication.run {
+                    normalizeLocator(
+                        locatorFromLink(
+                            Link(url!!)
+                        )!!
+                    )
+                }
+            } catch (e: Exception){
 
-            val initialLocator = readiumRepository.getLoctor(id)
+                readiumRepository.getLoctor(id)
+            }
 
-            factory = EpubNavigatorFactory(publication).createFragmentFactory(
+
+            val factory = EpubNavigatorFactory(publication).createFragmentFactory(
                 initialLocator = initialLocator,
                 paginationListener = object: EpubNavigatorFragment.PaginationListener{
                     override fun onPageChanged(pageIndex: Int, totalPages: Int, locator: Locator) {
@@ -66,30 +75,21 @@ class ReaderViewModel @Inject constructor(
 
             _uiState.update {
                 ReaderUiState.Success(
-                    fragment = factory.instantiate(ClassLoader.getSystemClassLoader(),EpubNavigatorFragment::class.java.name) as EpubNavigatorFragment,
+                    fragment = factory,
                     bookTitle = publication.metadata.title?: "Title not found",
                     readingProgression = initialLocator?.locations?.totalProgression
                 )
             }
         }
     }
-    @OptIn(DelicateReadiumApi::class)
-    fun onViewInflated(){
-        val url = link?.let{link ->
-            Url(link)
-        }
-        if(url == null) return
 
+    fun onUpdate(fragment: EpubNavigatorFragment){
         viewModelScope.launch{
-            val fragment = (_uiState.value as? ReaderUiState.Success)?.fragment ?: return@launch
-
-            fragment.lifecycle.withStarted {
-                val boolean = fragment.go(link = Link(url), animated = true)
-                Log.d("ReaderViewModel", "onViewInflated: $boolean")
+            configurationsRepository.isScrollEnabled.collect {
+                fragment.submitPreferences(EpubPreferences().copy(scroll = it))
             }
         }
     }
-
     private fun updateProgress(locator: Locator){
         viewModelScope.launch {
             readiumRepository.updateProgress(id, locator)
@@ -99,13 +99,20 @@ class ReaderViewModel @Inject constructor(
         }
     }
 
+    override fun onCleared() {
+        _uiState.update {
+            (it as? ReaderUiState.Success)?.copy(
+                fragment = EpubNavigatorFragment.createDummyFactory())?:it
+        }
+        super.onCleared()
+    }
 }
 
 sealed interface ReaderUiState{
     data object IsLoading: ReaderUiState
     data object Error: ReaderUiState
     data class Success(
-        val fragment : EpubNavigatorFragment,
+        val fragment : FragmentFactory,
         val bookTitle: String,
         val readingProgression: Double?,
     ): ReaderUiState

@@ -56,6 +56,7 @@ fun BookList(
     books: List<Book>,
     isLoading: Boolean,
     onToggleSave: (Int, Book) -> Unit,
+    updateBottomSheetBook: (Int) -> Unit,
     onClick: (Int)-> Unit,
     loadMore: ()-> Unit,
     modifier: Modifier,
@@ -63,17 +64,28 @@ fun BookList(
     memoryCachePolicy: CachePolicy = CachePolicy.ENABLED,
     contentPadding: PaddingValues = PaddingValues(dimensionResource(id = R.dimen.large_padding)),
 ){
-    var bottomSheetBook by remember{ mutableStateOf<Pair<Int,Book>?>(null) }
     val lazyListState = rememberLazyListState()
     val reachedBottom: Boolean by remember {
         derivedStateOf {
             lazyListState.reachedBottom(4)
         }
     }
+
+    var bottomSheetIndex by remember{ mutableStateOf<Int?>(null) }
+    var book by remember {
+        mutableStateOf<Book?>(null)
+    }
+
+    LaunchedEffect(key1 = bottomSheetIndex, key2 = books) {
+        if(bottomSheetIndex!=null){
+            book = books[bottomSheetIndex!!]
+        }
+    }
     LaunchedEffect(key1 = reachedBottom) {
         Log.d("BookList", "reachedBottom: $reachedBottom")
         if(reachedBottom) loadMore()
     }
+
     LazyColumn(
         state = lazyListState,
         contentPadding = contentPadding,
@@ -87,7 +99,8 @@ fun BookList(
                 book = book,
                 onClick = { onClick(book.id) },
                 onLongPress = {
-                    bottomSheetBook = index to book
+                    updateBottomSheetBook(index)
+                    bottomSheetIndex = index
                 },
                 diskCachePolicy = diskCachePolicy,
                 memoryCachePolicy = memoryCachePolicy,
@@ -111,13 +124,18 @@ fun BookList(
             }
         }
     }
-    bottomSheetBook?.let{(index, book)->
-        CustomBottomSheet(
-            book = book,
-            onToggleSave = { onToggleSave(index, book) },
-            onDismiss = { bottomSheetBook = null},
-            onExpand = { onClick(book.id) }
-        )
+    bottomSheetIndex?.let{index->
+        book?.let{
+            CustomBottomSheet(
+                book = book!!,
+                onToggleSave = {
+                    onToggleSave(index, book!!)
+                    book = books[index]
+                },
+                onDismiss = { bottomSheetIndex = null },
+                onExpand = { onClick(book!!.id) }
+            )
+        }
     }
 }
 
@@ -243,7 +261,8 @@ fun ListPreview(){
             diskCachePolicy = CachePolicy.DISABLED,
             onClick = {},
             onToggleSave = {_,_->},
-            loadMore = {}
+            loadMore = {},
+            updateBottomSheetBook = {}
         )
     }
 }

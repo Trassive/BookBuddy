@@ -9,4 +9,5 @@ interface BookCatalogueRepository {
     suspend fun updateCatalogue(update: Update): Flow<List<Book>>
     suspend fun saveBook(book: Book)
     suspend fun unSaveBook(id: Int)
+    suspend fun isSaved(id: Int): Boolean
 }

@@ -30,6 +30,8 @@ interface BooksDao{
     @Query("SELECT * FROM book_resource WHERE bookId = :bookId")
     suspend fun getResource(bookId: Int): BookResource?
 
+    @Query("SELECT EXISTS(SELECT * FROM offline_books WHERE id = :bookId)")
+    suspend fun isSaved(bookId: Int): Boolean
     @Transaction
     suspend fun deleteBook(bookId: Int){
         deleteResource(bookId)

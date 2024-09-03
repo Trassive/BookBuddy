@@ -1,5 +1,7 @@
 package com.example.bookbuddy.ui.readerscreen
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,6 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
+import androidx.fragment.app.FragmentFactory
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.compose.AndroidFragment
+import androidx.fragment.compose.rememberFragmentState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bookbuddy.R
 import com.example.bookbuddy.ui.util.CustomTopBar
@@ -26,16 +32,14 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderScreen(viewModel: ReaderViewModel, onClick: (Int) -> Unit) {
+fun ReaderScreen(viewModel: ReaderViewModel, onArrowClick: () -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             CustomTopBar(
                 topBarTitle = (state as? ReaderUiState.Success)?.bookTitle?:"",
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                onArrowClick = {
-                    onClick(viewModel.id)
-                }
+                onArrowClick = onArrowClick
             )
         }
     ) {innerPadding ->
@@ -49,9 +53,8 @@ fun ReaderScreen(viewModel: ReaderViewModel, onClick: (Int) -> Unit) {
                 }
                 is ReaderUiState.Success -> {
                     ReaderContent(
-                        fragment = (state as ReaderUiState.Success).fragment,
-                        onViewInflated = viewModel::onViewInflated,
-                        containerId = viewModel.containerId
+                        fragmentFactory = (state as ReaderUiState.Success).fragment,
+                        onUpdate = viewModel::onUpdate,
                     )
                 }
                 is ReaderUiState.Error -> {
@@ -64,34 +67,14 @@ fun ReaderScreen(viewModel: ReaderViewModel, onClick: (Int) -> Unit) {
         }
     }
 }
+
 @Composable
-fun ReaderContent(fragment: EpubNavigatorFragment, onViewInflated: ()->Unit, containerId: Int){
-    var isViewInflated by remember { mutableStateOf(false) }
+fun ReaderContent(fragmentFactory: FragmentFactory, onUpdate: (EpubNavigatorFragment)->Unit){
     val fragmentManager = (LocalContext.current as FragmentActivity).supportFragmentManager
-
-    DisposableEffect(fragment) {
-        onDispose {
-            val existingFragment = fragmentManager.findFragmentById(containerId)
-            if(existingFragment != null ){
-                fragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
-            }
-        }
-    }
-    AndroidView(
-        factory = {context->
-            FragmentContainerView(context).apply {
-                id = containerId
-
-                fragmentManager.beginTransaction()
-                    .replace(id,fragment)
-                    .commit()
-            }
-        },
-        update = {
-            if(!isViewInflated){
-                onViewInflated()
-                isViewInflated = true
-            }
+    fragmentManager.fragmentFactory = fragmentFactory
+    AndroidFragment<EpubNavigatorFragment>(
+        onUpdate = {
+            onUpdate(it)
         }
     )
 

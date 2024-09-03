@@ -99,10 +99,6 @@ object AppModule {
     @Provides
     fun providesConfigurationsRepository(dataStore: DataStore<Preferences>): ConfigurationsRepository = ConfigurationsRepository(dataStore)
 
-    @Provides
-    fun providesContainerId(): Int = 12345
-
-
 }
 
 private fun createRetrofit(baseUrl: String): Retrofit{

@@ -20,6 +20,7 @@ import com.example.compose.BookBuddyTheme
 fun SearchView(
     homeUiState: HomeUiState.SearchView,
     onToggleSave: (Int, Book) -> Unit,
+    updateBottomSheetBook: (Int) -> Unit,
     loadMore: ()->Unit,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -30,6 +31,7 @@ fun SearchView(
         BookList(
             books = homeUiState.bookList,
             isLoading = homeUiState.isLoading,
+            updateBottomSheetBook = updateBottomSheetBook,
             onToggleSave = onToggleSave,
             onClick = onClick,
             loadMore = loadMore,
@@ -51,7 +53,8 @@ fun SearchViewPreview(){
             homeUiState = HomeUiState.SearchView(searchText = "", bookList = fakeData.books),
             onClick = {},
             loadMore = {},
-            onToggleSave = {_,_ ->}
+            onToggleSave = {_,_ ->},
+            updateBottomSheetBook = {}
         )
     }
 }

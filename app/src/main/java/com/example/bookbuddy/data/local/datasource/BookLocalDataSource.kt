@@ -45,6 +45,8 @@ class BookLocalDataSource @Inject constructor(private val booksDao: BooksDao) {
     suspend fun deleteBook(id: Int){
         booksDao.deleteBook(id)
     }
-
+    suspend fun isSaved(id: Int): Boolean {
+        return booksDao.isSaved(id)
+    }
 }
 

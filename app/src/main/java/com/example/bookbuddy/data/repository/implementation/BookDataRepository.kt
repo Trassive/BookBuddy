@@ -117,6 +117,10 @@ class BookDataRepository @Inject constructor(
         bookLocalDataSource.unSaveBook(id)
     }
 
+    override suspend fun isSaved(id: Int): Boolean {
+        return bookLocalDataSource.isSaved(id)
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun downloadBook(book: Book): Flow<DownloadState> {
         return withContext(dispatcherIO){

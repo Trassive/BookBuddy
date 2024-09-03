@@ -2,6 +2,7 @@
 
 package com.example.bookbuddy.ui.homescreen
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -57,13 +58,20 @@ import kotlinx.coroutines.launch
 fun HomeViewContent(
     homeUiState: HomeUiState.HomeView,
     onToggleSave: (Int,Book) -> Unit,
+    updateBottomSheetBook: (Int)-> Unit,
     onClick: (Int) -> Unit,
     loadMore: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var bottomSheetBook by remember{ mutableStateOf<Pair<Int,Book>?>(null) }
-
-
+    var bottomSheetIndex by remember{ mutableStateOf<Int?>(null) }
+    var book by remember {
+        mutableStateOf<Book?>(null)
+    }
+    LaunchedEffect(key1 = bottomSheetIndex, key2 = homeUiState) {
+        if(bottomSheetIndex!=null){
+            book = homeUiState.bookList[bottomSheetIndex!!]
+        }
+    }
     val height = min(400.dp, LocalConfiguration.current.screenHeightDp.dp * 0.6f)
 
 
@@ -105,12 +113,14 @@ fun HomeViewContent(
         item{
             Spacer(Modifier.height(40.dp))
         }
-        itemsIndexed(items = homeUiState.bookList, key = {_ ,it-> it.id }) { index, book ->
+        itemsIndexed(items = homeUiState.bookList, key = {_ ,it-> it.id  }) { index, book ->
             BookCard(
                 book = book,
                 onClick = { onClick(book.id) },
                 onLongPress = {
-                    bottomSheetBook = index to book },
+                    updateBottomSheetBook(index)
+                    bottomSheetIndex = index
+                },
                 diskCachePolicy = CachePolicy.DISABLED,
                 memoryCachePolicy = CachePolicy.ENABLED,
                 modifier = Modifier
@@ -133,13 +143,18 @@ fun HomeViewContent(
             }
         }
     }
-    bottomSheetBook?.let{( index, book )->
-        CustomBottomSheet(
-            book = book,
-            onToggleSave = { onToggleSave(index,book) },
-            onDismiss = { bottomSheetBook = null},
-            onExpand = { onClick(book.id) }
-        )
+    bottomSheetIndex?.let{index->
+        book?.let{
+            CustomBottomSheet(
+                book = book!!,
+                onToggleSave = {
+                    onToggleSave(index, book!!)
+                    book = homeUiState.bookList[index]
+                },
+                onDismiss = { bottomSheetIndex = null },
+                onExpand = { onClick(book!!.id) }
+            )
+        }
     }
 
     LaunchedEffect(lazyListState) {
@@ -182,7 +197,8 @@ fun HomeViewPreview(){
                 ),
                 onClick = {},
                 loadMore = { state = state+state},
-                onToggleSave = { _,_ -> }
+                onToggleSave = { _,_ -> },
+                updateBottomSheetBook = {}
             )
         }
     }

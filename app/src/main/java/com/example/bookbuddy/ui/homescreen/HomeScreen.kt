@@ -55,6 +55,7 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
                     HomeViewContent(
                         homeUiState = state,
                         loadMore = viewModel::updateBooks,
+                        updateBottomSheetBook = viewModel::updateBottomSheetBook,
                         onClick = onClick,
                         onToggleSave = {position,book-> viewModel.toggleSave(position = position, book = book) },
                         modifier = Modifier
@@ -68,6 +69,7 @@ fun HomeScreen(viewModel: HomeScreenViewModel, onClick: (Int) -> Unit) {
                     SearchView(
                         homeUiState = state,
                         loadMore = viewModel::updateBooks,
+                        updateBottomSheetBook = viewModel::updateBottomSheetBook,
                         onToggleSave = {position,book-> viewModel.toggleSave(position = position, book = book) },
                         onClick = onClick,
                         modifier = Modifier

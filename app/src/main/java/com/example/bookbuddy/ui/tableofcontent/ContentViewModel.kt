@@ -1,5 +1,6 @@
 package com.example.bookbuddy.ui.tableofcontent
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,6 +36,10 @@ class ContentViewModel @Inject constructor(
                 )
             }
         }
+    }
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("ReaderViewModel toc" , "onCleared")
     }
 }
 sealed interface TableOfContentUiState {

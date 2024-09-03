@@ -2,6 +2,7 @@
 
 package com.example.bookbuddy.ui.util
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -67,12 +69,14 @@ fun CustomBottomSheet(
         containerColor = Color.Transparent,
         dragHandle = {}
     ) {
-
+        Log.d("CustomBottomSheet", "CustomBottomSheet: $book")
         BoxWithConstraints(modifier = Modifier.fillMaxSize()){
             val maxHeight = maxHeight
             val coverWidth = min(maxWidth,200.dp)
             val coverHeight = coverWidth*1.5f
-            Column(Modifier.matchParentSize()){
+            Column(
+                Modifier.matchParentSize()
+            ){
                 Spacer(modifier = Modifier
                     .fillMaxWidth()
                     .weight(3f)
@@ -197,6 +201,8 @@ private fun BookContent(
         Text(
             text = book.categories.joinToString(),
             style = MaterialTheme.typography.bodyLarge,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.medium_padding))
         )
         Text(

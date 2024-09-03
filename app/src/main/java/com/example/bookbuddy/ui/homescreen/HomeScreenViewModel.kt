@@ -169,6 +169,21 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
             }
         }
     }
+    fun updateBottomSheetBook(index: Int){
+        viewModelScope.launch{
+            getBookAt(index)?.let {
+                if (bookCatalogueRepository.isSaved(it.id)) {
+                    val updatedBook = it.copy(isSaved = true)
+                    Log.d("HomeScreenViewModel", "updateBottomSheetBook: $updatedBook")
+                    _uiState.update {state->
+                        (state as? HomeUiState.HomeView)?.copy(bookList = state.bookList.updateAt(index) { updatedBook })
+                            ?: (state as HomeUiState.SearchView).copy(bookList = state.bookList.updateAt(index) { updatedBook })
+                    }
+                }
+            }
+        }
+    }
+
     fun toggleSave(book: Book, position: Int){
         viewModelScope.launch {
             val updatedBook = book.copy(isSaved = !book.isSaved)
@@ -183,11 +198,15 @@ class HomeScreenViewModel @Inject constructor(private val bookCatalogueRepositor
                 (it as? HomeUiState.HomeView)?.copy(bookList = it.bookList.updateAt(position) { updatedBook })?:
                 (it as HomeUiState.SearchView).copy(bookList = it.bookList.updateAt(position) { updatedBook })
             }
-
+            Log.d("HomeScreenViewModel", "toggleSave: ${(uiState.value as HomeUiState.HomeView).bookList[position]} ")
         }
     }
     private fun List<Book>.updateAt(position: Int, update: Book.() -> Book): List<Book> =
         toMutableList().apply { this[position] = this[position].update() }
+
+    private fun getBookAt(index: Int): Book? =
+        (_uiState.value as? HomeUiState.HomeView)?.bookList?.getOrNull(index) ?:
+        (_uiState.value as? HomeUiState.SearchView)?.bookList?.getOrNull(index)
 
 }
 

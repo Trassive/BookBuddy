@@ -91,7 +91,7 @@ fun NavGraphBuilder.commonScreen(navController: NavHostController){
         val viewModel = hiltViewModel<ReaderViewModel>()
         ReaderScreen(
             viewModel = viewModel,
-            onClick = {id -> navController.navigate(LeafScreen.TableOfContent(id))}
+            onArrowClick = { navController.navigateUp()}
         )
     }
 }

@@ -34,19 +34,23 @@ BookBuddy is designed to be your go-to eBook reader and downloader. Whether you'
 - **Book Navigation:** Jump to any point in the book and resume from your last read location.
 - **Bookmarking:** Easily bookmark your favorite books.
 - **App Storage:** Downloaded books are securely stored in app storage.
-- **Great UI:** Modern, intuitive design built with Jetpack Compose.
+- **Mordern UI:** Modern, intuitive design built with Jetpack Compose.
 
 ---
 
 ## Tech Stack
 
-- **UI:** [Jetpack Compose](https://developer.android.com/jetpack/compose)
+
+- **UI Framework:** [Jetpack Compose](https://developer.android.com/jetpack/compose)
 - **Architecture:** MVVM, Clean Architecture
 - **Asynchronous Programming:** Kotlin Coroutines
 - **Local Storage:** Room Database
 - **Image Loading:** Coil
 - **Dependency Injection:** Hilt
-- **eBook Reading:** [Readium](https://readium.org/) (Fragment based)
+- **eBook Reading:** [Readium](https://readium.org) (Fragment-based)
+- **Networking:** [Retrofit](https://square.github.io/retrofit/)  
+  *Used for API calls and downloading eBook data.*
+
 
 ---
 
